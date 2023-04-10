@@ -1,5 +1,15 @@
 # CHAPTER 01. 객체, 설계
 
+**TL;DR**
+
+- 소프트웨어 설계는 이론보다 실무가 먼저이다.
+- 소프트웨어 모듈 목적은 '제대로된 실행 동작', '변경 용이성', '코드를 읽는 사람과의 의사소통' 이다.
+- 객체는 자신의 데이터를 스스로 처리하는 자율적인 존재여야 한다.
+- 객체는 캡슐화를 이용해 의존성을 적절히 관리하여 결합도를 낮추는 것이다.
+- 설계는 여러 방법이 될 수 있는, 트레이드오프의 산물이다.
+- 훌륭한 객체지향 설계는 모든 객체들이 자율적으로 행동하며, 내일의 변경을 매끄럽게 수용할 수 있는 설계이다.
+
+
 ### 이론 vs. 설계
 
 **이론이 먼저일까, 실무가 먼저일까?**
@@ -251,4 +261,102 @@ public class TicketSeller {
 - 캡슐화를 이용해 의존성을 적절히 관리하여 결합도를 낮추는 것
 - 책임의 이동(shift of responsibility): 각 객체가 자신이 맡은 일을 스스로 처리하도록 책임이 개별 객체로 이동 
 
+
+### 더 개선할 수 있다 (v3)
+
+
+**1/ Audience 클래스 내의 Bag의 응집도 높은 자율 객체로 변경**
+
+```java
+
+public class Bag { 
+  // ...
+  public Long hold(Ticket ticket) {
+    if (hasInvitation()) {
+      setTicket(ticket);
+      return 0L;
+    } else {
+      setTicket(ticket);
+      minusAmount(ticket.getFee());
+      return ticket.getFee();
+    }
+  }
+  
+  // change to private
+  private boolean hasInvitation() {
+    return invitation != null;
+  }
+
+  // change to private
+  private void setTicket(Ticket ticket) {
+    this.ticket = ticket;
+  }
+
+  // change to private
+  private void minusAmount(Long amount) {
+    this.amount -= amount;
+  }
+}
+
+```
+
+```java
+public class Audience {
+    //...
+    public Long buy(Ticket ticket) {
+        return bag.hold(ticket);
+    }
+}
+```
+
+**2/ TicketOffice를 자율 객체로 변경**
+
+```java
+public class TicketOffice { 
+  // ...
+  public void sellTicketTo(Audience audience) {
+    plusAmount(audience.buy(getTickets()));
+  }
+  // change to private
+  private void plusAmount(Long amount) {
+    this.amount += amount;
+  }
+}
+```
+
+```java
+public class TicketSeller {
+    // ...
+    public void sellTo(Audience audience) {
+        ticketOffice.sellTicketTo(audience);
+    }
+}
+```
+
+하지만, TicketOffice와 Audience의 의존성이 추가됨
+
+**두 가지 사실** 
+1. 어떤 기능 설계 방법은 한 가지 이상일 수 있다.
+2. 동일한 기능을 한 가지 이상의 방법으로 설계할 수 있기 때문에 결국 **설계는 트레이드오프의 산물**이다.
+
+
+> 설계는 균형의 예술이다.
+
+의인화(anthropomorphism)
+: 현실에서 수동적인 존재가 객체지향 세계에서는 **능동적이고 자율적인 존재**로 다루는 소프트웨어 객체 설계 원칙
+
+> 의인화의 관점에서 소프트웨어를 생물로 생각하자. 모든 생물처럼 소프트웨어는 태어나고, 삶을 영위하고, 그리고 죽는다[Wirfs-Brock90].
+
+
+훌륭한 객체지향 설계: 소프트웨어를 구성하는 모든 객체들이 자율적으로 행동하는 설계
+
+
+### 04. 객체지향 설계
+
+좋은 설계란 무엇인가? 
+
+- 요구하는 기능을 구현하는 코드를 짜는 동시에, **내일 쉽게 변경할 수 있는 코드**를 짜야 한다. 
+- 오늘 요구하는 기능을 온전히 수행하면서 **내일의 변경을 매끄럽게 수용할 수 있는 설계**다.
+
+즉, 변경에 유연하게 대응할 수 있는 코드
 
