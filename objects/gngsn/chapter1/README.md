@@ -58,7 +58,7 @@ Class Diagram:
 
 
 
-## 무엇이 문제인가
+## 02. 무엇이 문제인가
 
 <pre>
 <b>소프트웨어 모듈의 세가지 목적</b>
@@ -95,9 +95,9 @@ public void enter(Audience audience) {
 }
 ```
 
-**문제점 2.** Theater가 불필요한 정보를 알아야 함
+**문제점 2.** Theater의 enter 코드를 이해하기 위해서는, 여러 세부 사항을 한꺼번에 기억해야 함
 
-Theater가 알아야 하는 사실
+Theater의 enter를 이해하기 위해 알아야 하는 사실
 
 - audience가 bag을 가지고 있음
 - audience의 bag에는 현금과 티켓이 있음
@@ -129,4 +129,126 @@ Theater가 알아야 하는 사실
 - 결합도가 높을수록 서로 변경 시 영향도가 크기 때문에 변경이 어려움  
 
 **✔️ 목표: 애플리케이션의 기능을 구현하는 데 필요한 최소한의 의존성만 유지하고 불필요한 의존성 제거 => 결합도를 낮춰 변경이 용이한 설계를 만드는 것**
+
+
+## 03. 설계 개선하기
+
+**개선 사항**: 관람객과 판매원을 자율적인 존재로 만들자
+- Theater가 원하는 것은 관람객이 소극장에 입장하는 것뿐
+- Audience와 TicketSeller의 내부를 알지 못하게 차단
+
+### 개선 1. TicketSeller 캡슐화
+
+
+### 캡슐화
+
+<pre>
+<b> 📌 캡슐화(encapsulation)</b>
+물리적으로 객체 내부의 세부적인 사항을 감추는 것
+
+목적: 변경하기 쉬운 객체를 만드는 것
+효과: 캡슐화로 접근 제한 시, 객체 사이의 결합도를 낮춰 설계 변경이 용이
+</pre>
+
+
+**Theater**
+
+```java
+public class Theater {
+    // ...
+    public void enter(Audience audience) {
+        ticketSeller.sellTo(audience);
+    }
+}
+```
+**TicketSeller**
+```java
+public class TicketSeller {
+    //... 
+
+    // ✔️ 외부에서 알 필요 없음 - 접근 차단
+    // public TicketOffice getTicketOffice() {
+    //     return ticketOffice;
+    // }
+  
+    public void sellTo(Audience audience) {
+        if (audience.getBag().hasInvitation()) {
+            Ticket ticket = ticketOffice.getTickets();
+            audience.getBag().setTicket(ticket);
+        } else {
+            Ticket ticket = ticketOffice.getTickets();
+            audience.getBag().minusAmount(ticket.getFee());
+            ticketOffice.plusAmount(ticket.getFee());
+            audience.getBag().setTicket(ticket);
+        }
+    }
+}
+```
+
+- Theater는 TicketSeller의 Interface에만 의존
+  - Theater는 ticketOffice가 TicketSeller 내부에 존재함을 모름
+  - TicketSeller 내부에 ticketOffice 존재 -> Implementation(구현) 영역
+
+
+### 개선 2. Audience 캡슐화
+
+TicketSellerㅇ는 Audience의 getBag() 호출해 Bag에 접근 -> 높은 결합도
+
+**Audience**
+
+```java 
+public class Audience {
+    // ...
+    
+    // ✔️ 외부에서 알 필요 없음 - 접근 차단
+    // public Bag getBag() {
+    //     return bag;
+    // } 
+
+    public Long buy(Ticket ticket) {
+        if (bag.hasInvitation()) {
+            bag.setTicket(ticket);
+            return 0L;
+        } else {
+            bag.setTicket(ticket);
+            bag.minusAmount(ticket.getFee());
+            return ticket.getFee();
+        }
+    }
+}
+```
+
+**TicketSeller**
+
+```java 
+public class TicketSeller {
+    // ...
+    public void sellTo(Audience audience) {
+        ticketOffice.plusAmount(audience.buy(ticketOffice.getTickets()));
+    }
+}
+```
+
+**개선 사항** 
+: 자신의 문제를 스스로 해결하도록 만듦
+ 
+- Theater는 Audience나 TicketSeller의 내부에 직접하지 않음
+- Audience는 Bag 내부의 내용물을 직접 확인하지 않음
+
+
+### 절차 지향과 객체 지향
+
+**✔️ 캡슐화와 응집도**
+
+> 객체는 자신의 데이터를 스스로 처리하는 자율적인 존재여야 함
+- 캡슐화로 객체 간에 오직 메시지를 통해서만 상호작용
+- 밀접하게 연관된 작업만을 수행하고 연관성 없는 작업은 다른 객체에게 위임 -> 높은 응집도
+
+**✔️ 객체지향 프로그래밍(Object-Oriented Programming)**
+- 데이터와 프로세스가 동일한 모듈 내부에 위치하도록 프로그래밍하는 방식 
+
+**✔️ The Key of 객체지향 설계**
+- 캡슐화를 이용해 의존성을 적절히 관리하여 결합도를 낮추는 것
+- 책임의 이동(shift of responsibility): 각 객체가 자신이 맡은 일을 스스로 처리하도록 책임이 개별 객체로 이동 
+
 
