@@ -29,4 +29,17 @@ public class Bag {
     public boolean hasTicket() {
         return ticket != null;
     }
+
+    public Long hold(Ticket ticket) {
+        if (hasInvitation()) {
+            setTicket(ticket);
+            System.out.println("초대장을 가지고 있으므로 티켓을 받습니다.");
+            return 0L;
+        } else {
+            minusAmount(ticket.getFee());
+            setTicket(ticket);
+            System.out.println("현금 " + ticket.getFee() + "원을 지불하고 티켓을 받습니다.");
+            return ticket.getFee();
+        }
+    }
 }
