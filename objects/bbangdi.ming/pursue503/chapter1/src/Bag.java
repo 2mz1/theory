@@ -12,7 +12,6 @@ public class Bag {
         조건1. 이벤트 당첨자는 초대장이 존재
         조건2. 이벤트 미당첨자는 초대장이 존재 안함
      */
-
     public Bag(long amount) {
         this(null, amount);
     }
@@ -22,19 +21,29 @@ public class Bag {
         this.amount = amount;
     }
 
+    public Long hold(Ticket ticket) {
+        if (hasInvitation()) {
+            setTicket(ticket);
+            return 0L;
+        }
+        setTicket(ticket);
+        minusAmount(ticket.getFee());
+        return ticket.getFee();
+    }
+
     public boolean hasInvitation() {
         return invitation != null;
     }
 
-    public boolean hasTicket() {
+    private boolean hasTicket() {
         return ticket != null;
     }
 
-    public void setTicket(Ticket ticket) {
+    private void setTicket(Ticket ticket) {
         this.ticket = ticket;
     }
 
-    public void minusAmount(Long amount) {
+    private void minusAmount(Long amount) {
         this.amount -= amount;
     }
 
