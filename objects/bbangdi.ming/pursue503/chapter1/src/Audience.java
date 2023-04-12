@@ -5,6 +5,7 @@ public class Audience {
         this.bag = bag;
     }
 
+    // 관람객이 직접 가방을 열어 티켓을 구매하도록함
      public Long buy(Ticket ticket) {
         if (bag.hasInvitation()) {
             bag.setTicket(ticket);
