@@ -1,9 +1,10 @@
-package com.gngsn.chapter2.v1;
+package com.gngsn.chapter2.v2;
 
 import java.math.BigDecimal;
 
 /**
  * Version1.
+ *
  */
 public class Money {
     public static final Money ZERO = Money.wons(0);

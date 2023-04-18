@@ -1,10 +1,10 @@
-package com.gngsn.chapter2.v1;
+package com.gngsn.chapter2.v2;
 
-import com.gngsn.chapter2.v1.discountCondition.PeriodCondition;
-import com.gngsn.chapter2.v1.discountCondition.SequenceCondition;
-import com.gngsn.chapter2.v1.discountPolicy.AmountDiscountPolicy;
-import com.gngsn.chapter2.v1.discountPolicy.NoneDiscountPolicy;
-import com.gngsn.chapter2.v1.discountPolicy.PercentDiscountPolicy;
+import com.gngsn.chapter2.v2.discountCondition.SequenceCondition;
+import com.gngsn.chapter2.v2.discountPolicy.AmountDiscountPolicy;
+import com.gngsn.chapter2.v2.discountPolicy.PercentDiscountPolicy;
+import com.gngsn.chapter2.v2.discountCondition.PeriodCondition;
+import com.gngsn.chapter2.v2.discountPolicy.NoneDiscountPolicy;
 
 import java.time.DayOfWeek;
 import java.time.Duration;

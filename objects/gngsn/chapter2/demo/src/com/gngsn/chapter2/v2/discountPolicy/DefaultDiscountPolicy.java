@@ -1,23 +1,25 @@
-package com.gngsn.chapter2.v1.discountPolicy;
+package com.gngsn.chapter2.v2.discountPolicy;
 
-import com.gngsn.chapter2.v1.discountCondition.DiscountCondition;
-import com.gngsn.chapter2.v1.Money;
-import com.gngsn.chapter2.v1.Screening;
+import com.gngsn.chapter2.v2.Money;
+import com.gngsn.chapter2.v2.Screening;
+import com.gngsn.chapter2.v2.discountCondition.DiscountCondition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Version1. 할인 정책 추상 클래스
+ * Version2. 할인 정책 추상 클래스
+ * - DiscountPolicy을 구현한 클래스로 변경
  */
-public abstract class DiscountPolicy {
+public abstract class DefaultDiscountPolicy implements DiscountPolicy {
     private List<DiscountCondition> conditions = new ArrayList<>();
 
-    public DiscountPolicy(DiscountCondition ...conditions) {
+    public DefaultDiscountPolicy(DiscountCondition...conditions) {
         this.conditions = Arrays.asList(conditions);
     }
 
+    @Override
     public Money calculateDiscountAmount(Screening screening) {
         for(DiscountCondition each: conditions) {
             if (each.isSatisfiedBy(screening)) {
