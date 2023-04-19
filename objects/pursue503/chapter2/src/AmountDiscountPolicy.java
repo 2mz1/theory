@@ -1,4 +1,4 @@
-public class AmountDiscountPolicy extends DiscountPolicy {
+public class AmountDiscountPolicy extends DefaultDiscountPolicy {
 
     protected Money discountAmount;
 
