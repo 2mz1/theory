@@ -16,4 +16,8 @@ public class Screening {
 
         return false;
     }
+
+    public Money getMovieFee() {
+        return movie.getFee();
+    }
 }

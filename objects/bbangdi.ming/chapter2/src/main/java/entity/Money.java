@@ -1,7 +1,10 @@
 package entity;
 
+import lombok.ToString;
+
 import java.math.BigDecimal;
 
+@ToString
 public class Money {
 
     public static final Money ZERO = Money.wons(0);
@@ -21,7 +24,7 @@ public class Money {
         return new Money(this.amount.add(BigDecimal.valueOf(amount)));
     }
 
-    public Money times(int audienceCount) {
+    public Money times(double audienceCount) {
         return new Money(this.amount.multiply(BigDecimal.valueOf(audienceCount)));
     }
 
