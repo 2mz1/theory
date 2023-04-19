@@ -1,6 +1,7 @@
 package com.gngsn.chapter2.v2;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * Version1. 돈
@@ -13,14 +14,15 @@ public class Money {
     // Money 타입처럼 저장하는 값이 금액과 관련돼 있다는 의미를 전달할 수 없음
     private final BigDecimal amount;
 
-    public Money(BigDecimal amout) {
-        this.amount = amout;
+    public Money(BigDecimal amount) {
+        this.amount = amount;
     }
 
     public static Money wons(long amount) {
         return new Money(BigDecimal.valueOf(amount));
     }
 
+    // 클래스에 중첩된 wrapper가 생성되는 건 OOM 위험 +
     public Money plus(Money amount) {
         return new Money(this.amount.add(amount.amount));
     }
@@ -41,5 +43,18 @@ public class Money {
 
     public boolean isGreaterThanOrEqual(Money other) {
         return amount.compareTo(other.amount) >= 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Money money = (Money) o;
+        return Objects.equals(amount, money.amount);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(amount);
     }
 }

@@ -11,7 +11,7 @@ public class AmountDiscountPolicy extends DefaultDiscountPolicy {
     private Money discountAmount;
 
     public AmountDiscountPolicy(Money discountAmount, DiscountCondition... conditions) {
-        super();
+        super(conditions);
         this.discountAmount = discountAmount;
     }
 
