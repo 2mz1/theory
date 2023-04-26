@@ -6,6 +6,7 @@
 <details>
 <summary><b>CHAPTER 01. 객체, 설계</b></summary>
 
+<br/>
 <a href="https://github.com/2mz1/theory/tree/main/objects/gngsn/chapter1"> 🔗 link </a>
 <br/>
 
@@ -31,6 +32,7 @@
 <details>
 <summary><b>CHAPTER 02. 객체지향 프로그래밍</b></summary>
 
+<br/>
 <a href="https://github.com/2mz1/theory/tree/main/objects/gngsn/chapter2"> 🔗 link </a>
 <br/>
 
@@ -53,6 +55,10 @@
 <details>
 <summary><b>CHAPTER 03. 역할, 책임, 협력</b></summary>
 
+<br/>
+<a href="https://github.com/2mz1/theory/tree/main/objects/gngsn/chapter3"> 🔗 link </a>
+<br/>
+
 **TL;DR**
 - 객체지향 패러다임의 관점에서 핵심: 역할(role), 책임(responsibility), 협력(collaboration)
 - 메시지 전송: 객체 사이의 협력을 위해 사용할 수 있는 유일한 커뮤니케이션 수단
@@ -65,7 +71,8 @@
 **Impression**
 
 - Information Expert (정보 전문가) 패턴
-- 상태를 우선시 하는 게 아니라 행동이 우선시 되어 상태를 결정한다.
-  - DDD와 반대되는 개념?
-
+- 상태를 우선시 하는 게 아니라 행동이 우선시 되어 상태를 결정 (DDD와 반대되는 개념)
+- Spring에서의 협력은 **DI**, 협력을 위해 DI를 사용한다.
 </details>
+
+<br/><br/>
