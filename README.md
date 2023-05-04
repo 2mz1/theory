@@ -18,8 +18,6 @@
 
 ### Object
 
-**오브젝트와 의존관계**
-
 |닉네임| 정리
 | ---- | --- |
 | pursue503 | [오브젝트](https://github.com/2mz1/theory/tree/pursue503)
