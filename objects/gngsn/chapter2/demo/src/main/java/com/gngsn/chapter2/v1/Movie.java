@@ -11,7 +11,7 @@ public class Movie {
     private String title;
     private Duration runningTime;
     private Money fee;
-    protected DiscountPolicy discountPolicy;
+    private DiscountPolicy discountPolicy;
 
     public Movie(String title, Duration runningTime, Money fee, DiscountPolicy discountPolicy) {
         this.title = title;
