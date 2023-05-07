@@ -1,5 +1,8 @@
 package entity;
 
+import lombok.ToString;
+
+@ToString
 public class Customer {
     private String name;
     private String id;

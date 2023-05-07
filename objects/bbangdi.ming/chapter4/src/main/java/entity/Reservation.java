@@ -2,9 +2,11 @@ package entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class Reservation {
     private Customer customer;
     private Screening screening;
