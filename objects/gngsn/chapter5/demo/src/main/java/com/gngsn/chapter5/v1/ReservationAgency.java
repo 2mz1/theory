@@ -1,4 +1,7 @@
-package com.gngsn.chapter4.dataIntensive.v1;
+package com.gngsn.chapter5.v1;
+
+import com.gngsn.chapter5.v1.discount.DiscountCondition;
+import com.gngsn.chapter5.v1.discount.DiscountConditionType;
 
 public class ReservationAgency {
     public Reservation reserve(Screening screening, Customer customer, int audienceCount) {
