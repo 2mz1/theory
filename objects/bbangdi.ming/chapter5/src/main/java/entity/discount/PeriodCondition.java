@@ -10,6 +10,8 @@ public class PeriodCondition implements DiscountCondition {
 	private LocalTime startTime;
 	private LocalTime endTime;
 
+	private String max = "a";
+
 	public PeriodCondition(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
 		this.dayOfWeek = dayOfWeek;
 		this.startTime = startTime;
@@ -20,5 +22,9 @@ public class PeriodCondition implements DiscountCondition {
 		return screening.getWhenScreened().getDayOfWeek().equals(dayOfWeek) &&
 				startTime.compareTo(screening.getWhenScreened().toLocalTime()) <= 0 &&
 				endTime.compareTo(screening.getWhenScreened().toLocalTime()) >= 0;
+	}
+
+	public String getMax() {
+		return max;
 	}
 }
