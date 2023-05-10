@@ -60,9 +60,9 @@
 
 (DiscountCondition 이 변경되면 Screening, Movie 둘다 변경을 해야할 수도 있음)
 
-![Untitled](Chapter5%20%E1%84%8E%E1%85%A2%E1%86%A8%E1%84%8B%E1%85%B5%E1%86%B7%20%E1%84%92%E1%85%A1%E1%86%AF%E1%84%83%E1%85%A1%E1%86%BC%E1%84%92%E1%85%A1%E1%84%80%E1%85%B5%20164bb00c19c340fd8070f92d251bc591/Untitled.png)
+![Untitled](image/Untitled.png)
 
-![Untitled](Chapter5%20%E1%84%8E%E1%85%A2%E1%86%A8%E1%84%8B%E1%85%B5%E1%86%B7%20%E1%84%92%E1%85%A1%E1%86%AF%E1%84%83%E1%85%A1%E1%86%BC%E1%84%92%E1%85%A1%E1%84%80%E1%85%B5%20164bb00c19c340fd8070f92d251bc591/Untitled%201.png)
+![Untitled](image/Untitled%201.png)
 
 ## 창조자에게 객체 생성 책임을 할당하라
 
@@ -96,9 +96,9 @@
     - 모든 메서드가 객체의 모든 속성을 사용한다면 응집도가 높은것
 - 속성 그룹과 해당 그룹에 접근하는 메서드 그룹을 기준으로 코드를 분리해야 한다.
 
-![Untitled](Chapter5%20%E1%84%8E%E1%85%A2%E1%86%A8%E1%84%8B%E1%85%B5%E1%86%B7%20%E1%84%92%E1%85%A1%E1%86%AF%E1%84%83%E1%85%A1%E1%86%BC%E1%84%92%E1%85%A1%E1%84%80%E1%85%B5%20164bb00c19c340fd8070f92d251bc591/Untitled%202.png)
+![Untitled](image/Untitled%202.png)
 
-![Untitled](Chapter5%20%E1%84%8E%E1%85%A2%E1%86%A8%E1%84%8B%E1%85%B5%E1%86%B7%20%E1%84%92%E1%85%A1%E1%86%AF%E1%84%83%E1%85%A1%E1%86%BC%E1%84%92%E1%85%A1%E1%84%80%E1%85%B5%20164bb00c19c340fd8070f92d251bc591/Untitled%203.png)
+![Untitled](image/Untitled%203.png)
 
 ## Movie 클래스 개선하기
 
@@ -138,7 +138,7 @@
 
 (2장의 설계가 아래의 구조다)
 
-![Untitled](Chapter5%20%E1%84%8E%E1%85%A2%E1%86%A8%E1%84%8B%E1%85%B5%E1%86%B7%20%E1%84%92%E1%85%A1%E1%86%AF%E1%84%83%E1%85%A1%E1%86%BC%E1%84%92%E1%85%A1%E1%84%80%E1%85%B5%20164bb00c19c340fd8070f92d251bc591/Untitled%204.png)
+![Untitled](image/Untitled%204.png)
 
 
 
