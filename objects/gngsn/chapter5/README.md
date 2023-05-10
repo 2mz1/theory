@@ -1,5 +1,22 @@
 # CHAPTER 05. 책임 할당하기
 
+**TL;DR**
+- GRASP Pattern: General Responsibility Assignment Software Pattern, 책임 할당을 위한 소프트웨어 패턴
+  - : 책임을 수행하는 데 필요한 메시지를 결정하고, 책임을 수행할 정보 전문가에게 책임을 할당하라
+  - **INFORMATION EXPERT 패턴**: 책임을 정보 전문가(책임을 수행하는 데 필요한 정보를 가지고 있는 객체)에게 할당하라
+  - **LOW COUPLING 패턴**: 설계의 전체적인 결합도가 낮게 유지되도록 책임을 할당하라
+  - **HIGH COHESION 패턴**: 높은 응집도를 유지할 수 있게 책임을 할당하라
+  - **CREATOR 패턴**: 연결되거나 관련될 필요가 있는 객체에게 객체 생성 책임을 할당하라 (잘 알고 있거나/어차피 사용해야 하는 객체)
+  - **POLYMORPHISM 패턴**: 타입을 명시적으로 정의하고 각 타입에 다형적으로 행동하는 책임을 할당하라
+  - **PROTECTED VARIATIONS 패턴**: 변화가 예상되는 불안정한 지점들을 식별하고 그 주위에 안정된 인터페이스를 형성하도록 책임을 할당하라
+- 리팩터링을 고려할 시점 2가지
+    - 클래스의 속성이 서로 다른 시점에 초기화되거나 일부만 초기화된다는 것은 응집도가 낮다는 증거
+    - 메서드들이 사용하는 속성에 따라 그룹이 나뉜다면 클래스의 응집도가 낮다는 증거
+- 주석을 추가하는 대신 메서드를 작게 분해해서 각 메서드의 응집도를 높여라
+    - Benefit: 재활용될 확률 증가 / 메소드 이름으로 주석을 읽는 느낌을 줌 / 오버라이딩하기 용이
+- 처음부터 책임 주도 설계 방법을 따르는 것보다 동작하는 코드를 작성한 후, 리팩터링하는 것이 더 훌륭한 결과물을 낳을 수도 있음
+
+
 ## 01. 책임 주도 설계를 향해
 
 ### GRASP Pattern
@@ -133,7 +150,6 @@ _General Responsibility Assignment Software Pattern_.
 
 ### 02-4. 창조자에게 객체 생성 책임을 할당하라
 
-
 <pre>
 <b>📌 CREATOR 패턴</b> 
 : 객체 A를 생성할 때 아래 조건을 최대한 많이 만족하는 B에게 객체 생성 책임을 할당하라
@@ -235,7 +251,7 @@ GRASP 에서의 PROTECTED VARIATIONS(변경 보호) 패턴: 변경을 캡슐화�
 ### 03-5. Movie 클래스 개선하기
 
 _코드 수정: version 3_
-
+ 
 - 금액 할인 정책과 관련된 클래스: AmountDiscountMovie
 - 비율 할인 정책과 관련된 클래스: PercentDiscountMovie
 - 할인 정책을 적용하지 않는 클래스: NoneDiscountMovie
@@ -303,7 +319,7 @@ public class ReservationAgency {
 
 ### 04-2. 객체를 자율적으로 만들자
 
-어떤 데이터를 사용하는지를 가장 쉽게 알 수 있는 방법은 메서드 안에서 어떤 클래스의 접근자 메서드 를 사용하는지 파악하는 것
+어떤 데이터를 사용하는지를 가장 쉽게 알 수 있는 방법은 메서드 안에서 어떤 클래스의 접근자 메서드를 사용하는지 파악하는 것
 
 - 처음부터 책임 주도 설계 방법을 따르는 것보다 동작하는 코드를 작성한 후, 리팩터링하는 것이 더 훌륭한 결과물을 낳을 수도 있다.
 - 캡슐화, 결합도, 응집도를 이해하고 훌륭한 객체지향 원칙을 적용하기 위해 노력한다면 책임 주도 설계 방법을 단계적으로 따르지 않더라도 유연하고 깔끔한 코드를 얻을 수 있을 것
@@ -316,3 +332,42 @@ public class ReservationAgency {
 가령, 영화 예매 시스템을 고려할 때 어떤 객체가 "정보 책임자"인지, 해당 객체가 왜 정보 책임자인지에 대한 이유부터 시작한다. 
 Reservation 을 생성할 책임은 예약에 대한 정보를 가장 많이 담고 있는 Screening에게 할당하는 것이 적절해보이는 타당성을 제시하며 독자를 이해시킨다.
 합리적이고 납득가능한 설명으로 객체지향적인 개발을 어떻게 할 수 있는지에 대해 제시하며 책임 주도 개발을 코드로 직접 느낄 수 있었다.
+
+
+
+**스터디 논의사항**
+
+- interface와 abstract 차이? 
+  - 상수 인터페이스 안티패턴 -> 사용 금지 (인터페이스를 잘못 사용한 예)
+  - interface static final 상수 값이 자식 클래스로 구현되었을 경우, 상수가 오염된다.
+  - ```java
+    public interface Example {
+        String message = "STATIC MESSAGE"; 
+    }
+    ```
+  - ```java
+    public class ImplementExample implements Example {
+    public String message;
+    
+        public String getMessage() {
+            return message;
+        }
+    
+        public void setMax(String message) {
+            this.message = message;
+        }
+    }
+    ```
+  - 가령, 위의 코드를 보면 Example 에서 message는 interface에 의해 `static final String message = "STATIC MESSAGE";` 로 정의되었음에도, 구현에 의해 message 필드는 `setter`를 통해 오염될 수 있게된다.
+
+
+<br/><br/>
+
+**후기**
+
+책임 할당을 통한 객체들의 협력을 어떻게 구현할 수 있는지 구체적인 예시를 통해 가이드한다.
+가령, 영화 예매 시스템을 고려할 때 어떤 객체가 "정보 책임자"인지, 해당 객체가 왜 정보 책임자인지에 대한 이유부터 시작한다.
+Reservation 을 생성할 책임은 예약에 대한 정보를 가장 많이 담고 있는 Screening에게 할당하는 것이 적절해보이는 타당성을 제시하며 독자를 이해시킨다.
+합리적이고 납득가능한 설명으로 객체지향적인 개발을 어떻게 할 수 있는지에 대해 제시하며 책임 주도 개발을 코드로 직접 느낄 수 있었다.
+
+
