@@ -1,10 +1,8 @@
-package entity;
+package com.gngsn.chapter5.v3;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
+/**
+ * v1. 예약
+ */
 public class Reservation {
     private Customer customer;
     private Screening screening;

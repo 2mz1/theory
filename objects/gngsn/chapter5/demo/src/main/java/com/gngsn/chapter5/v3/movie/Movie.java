@@ -1,31 +1,38 @@
-package entity.movie;
+package com.gngsn.chapter5.v3.movie;
 
-import entity.Money;
-import entity.Screening;
-import entity.discount.DiscountCondition;
-import lombok.Getter;
+import com.gngsn.chapter5.v3.Money;
+import com.gngsn.chapter5.v3.Screening;
+import com.gngsn.chapter5.v3.discount.DiscountCondition;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 
+/**
+ * v3. 영화
+ */
 public abstract class Movie {
     private String title;
     private Duration runningTime;
-
-    @Getter
     private Money fee;
     private List<DiscountCondition> discountConditions;
 
-    public Movie(String title, Duration runningTime, Money fee, DiscountCondition... discountConditions) {
+    public Movie(String title, Duration runningTime, Money fee,
+                 DiscountCondition... discountConditions) {
         this.title = title;
         this.runningTime = runningTime;
         this.fee = fee;
-        this.discountConditions = Arrays.asList(discountConditions);
+        this.discountConditions = List.of(discountConditions);
     }
 
-    public final Money calculateMovieFee(Screening screening) {
+    public Money getFee() {
+        return fee;
+    }
 
+    /**
+     * Message: 가격을 계산하라
+     * From: Screening Entity
+     */
+    public Money calculateMovieFee(Screening screening) {
         if (isDiscountable(screening)) {
             return fee.minus(calculateDiscountAmount());
         }
