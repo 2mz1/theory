@@ -31,4 +31,11 @@ public class Screening {
         return whenScreened;
     }
 
+    public int getSequence() {
+        return sequence;
+    }
+
+    public LocalDateTime getWhenScreened() {
+        return whenScreened;
+    }
 }
