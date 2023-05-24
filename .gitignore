@@ -1,5 +1,8 @@
-/.idea/
-*.out
+.idea/
+*.iml
+.gradle/
+build/
+out/
 
 ### Windows template
 # Windows thumbnail cache files
