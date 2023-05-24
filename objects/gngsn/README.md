@@ -1,5 +1,5 @@
 ## Objects
-<small>Author: [Kyeongseon Park](https://github.com/gngsn)</small>
+<small>Author: [Gyeongseon Park](https://github.com/gngsn)</small>
 
 <br/>
 
@@ -133,6 +133,27 @@
   - Query: 객체와 관련된 **정보를 반환**하는 오퍼레이션
 - 원칙을 맹신하지 마라, **원칙이 적절한 상황과 부적절한 상황을 판단할 수 있는 안목을 길러라.**
 - Design By Contract: 계약에 의한 설계. 협력을 위해 클라이언트와 서버가 준수해야 하는 제약을 코드 상에 명시적으 로 표현하고 강제할 수 있는 방법
+
+</details>
+<details>
+<summary><b>CHAPTER 07. 객체 분해</b></summary>
+
+<br/>
+<a href="https://github.com/2mz1/theory/tree/main/objects/gngsn/chapter7"> 🔗 link </a>
+<br/>
+
+**TL;DR**
+- 추상화: 불필요한 정보를 제거하고 현재의 문제 해결에 필요한 핵심만 남기는 작업
+- 분해(decomposition): 큰 문제를 해결 가능한 작은 문제로 나누는 작업
+- 소프트웨어는 **데이터**를 이용해 정보를 표현하고 **프로시저**를 이용해 데이터를 조작
+  - 프로시저 추상화: = 기능 분해, 알고리즘 분해. 소프트웨어가 무엇을 해야 하는지를 추상화.
+  - 데이터 추상화: 소프트웨어가 무엇을 알아야 하는지를 추상화
+- 모듈은 퍼블릭 인터페이스를 외부에 제공해서 복잡성과 변경 가능성을 감춰야 한다.
+- 클래스는 절차를 추상화(procedural abstraction), 추상 데이터 타입은 타입을 추상화(type abstraction).
+- 추상 데이터 타입과 객체지향 설계의 유용성은 설계에 요구되는 변경의 압력이 '타입 추가'에 관한 것인지, 아니면 '오퍼레이션 추가'에 관한 것인지에 따라 달라짐
+  - 변경의 압력이 **타입 추가하는 것**이라면 더 강한 경우에는 객체지향
+  - 변경의 압력이 **오퍼레이션을 추가하는 것**이라면 추상 데이터 타입
+
 
 </details>
 
