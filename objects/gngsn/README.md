@@ -27,8 +27,9 @@
 
 - TicketSeller가 TicketOffice를 가지고 있다는 사실이 어색함
 - Theater과 TicketOffice는 개별된 공간이라고 했으니, Theater를 TicketOffice라고 바꾸는 게 낫지 않을까?
-</details>
 
+<br/>
+</details>
 <details>
 <summary><b>CHAPTER 02. 객체지향 프로그래밍</b></summary>
 
@@ -50,6 +51,8 @@
 
 - 프로그래머의 역할을 클래스 작성자 (class creator)와 클라이언트 프로그래머 (client programmer)로 구분하라
 - BigDecimal: 금액이나 복잡한 숫자 계산에는 BigDecimal을 사용하는 게 분명히 좋음. 가령, 부동 소수점 관련 문제
+
+<br/>
 </details>
 
 <details>
@@ -88,6 +91,7 @@
 - 결론: 데이터 중심의 설계는 **너무 이른 시기에 데이터에 대해 고민**하기 때문에 **캡슐화에 실패**
 - 객체의 구현을 먼저 결정하고 협력을 고민하기 때문에 이미 구현된 객체의 인터페이스를 억지로 끼워맞출 수 밖에 없다.
 
+<br/>
 </details>
 <details>
 <summary><b>CHAPTER 05. 책임 할당하기</b></summary>
@@ -112,6 +116,7 @@
   - Benefit: 재활용될 확률 증가 / 메소드 이름으로 주석을 읽는 느낌을 줌 / 오버라이딩하기 용이
 - 처음부터 책임 주도 설계 방법을 따르는 것보다 동작하는 **코드를 작성한 후, 리팩터링하는 것이 더 훌륭한 결과물을 낳을 수도 있음**
 
+<br/>
 </details>
 <details>
 <summary><b>CHAPTER 06. 메시지와 인터페이스</b></summary>
@@ -134,6 +139,7 @@
 - 원칙을 맹신하지 마라, **원칙이 적절한 상황과 부적절한 상황을 판단할 수 있는 안목을 길러라.**
 - Design By Contract: 계약에 의한 설계. 협력을 위해 클라이언트와 서버가 준수해야 하는 제약을 코드 상에 명시적으 로 표현하고 강제할 수 있는 방법
 
+<br/>
 </details>
 <details>
 <summary><b>CHAPTER 07. 객체 분해</b></summary>
@@ -160,7 +166,7 @@
 <summary><b>CHAPTER 08. 의존성 관리하기</b></summary>
 
 <br/>
-<a href="https://github.com/2mz1/theory/tree/main/objects/gngsn/chapter7"> 🔗 link </a>
+<a href="https://github.com/2mz1/theory/tree/main/objects/gngsn/chapter8"> 🔗 link </a>
 <br/>
 
 **TL;DR**
