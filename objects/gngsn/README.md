@@ -157,7 +157,7 @@
 <br/>
 </details>
 <details>
-<summary><b>CHAPTER 07. 객체 분해</b></summary>
+<summary><b>CHAPTER 08. 의존성 관리하기</b></summary>
 
 <br/>
 <a href="https://github.com/2mz1/theory/tree/main/objects/gngsn/chapter7"> 🔗 link </a>
