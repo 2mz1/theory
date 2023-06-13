@@ -1,4 +1,4 @@
-# CHAPTER 10. 유연한 설계
+# CHAPTER 10. 상속과 코드 재사용
 
 **TL;DR**
 
