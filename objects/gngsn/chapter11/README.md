@@ -416,3 +416,77 @@ object NightltDiscountPolicy {
 > → 트레이트를 이용해 변경 위에 변경을 쌓아 올리는 쌓을 수 있는 변경이 가능해짐
 > 
 > _- 마틴 오더스키(Martin Odersky)_
+
+
+<br/>
+
+---
+
+<br/>
+
+### Mixin vs. AOP
+
+Mixin & AOP(Aspect-Oriented Programming)
+: 모두 코드 모듈성과 재사용성을 향상시키는 것을 목표로 하는 소프트웨어 개발 개념. 약간의 유사점이 있지만, 뚜렷한 차이점이 존재
+
+<br/>
+
+<table>
+<tr>
+<th colspan="2"></th><th>Mixin</th><th>AOP</th>
+</tr>
+<tr>
+<th rowspan="2">공통점</th>
+<th>Modularity</th>
+<td colspan="2">
+관심사(concern)를 분리하고 독립적인 구성 요소를 결합 혹은 구성하는 modular code를 지향.
+</td>
+</tr>
+<tr>
+<th>Code Reusability</th>
+<td colspan="2">
+코드 재사용을 장려.
+</td>
+</tr>
+<tr>
+<th rowspan="4">차이점</th>
+<th>Conceptual Approach <small><br/>개념적 접근 방식의 차이</small></th>
+<td>
+구성(composition)을 통한 코드 재사용이 목표
+</td>
+<td>
+핵심 로직으로 부터 교차 관심사(cross-cutting)를 분리하는 것을 목표
+</td>
+</tr>
+<tr>
+<th>Granularity <small><br/>세분화</small></th>
+<td>
+더 작은 수준의 세분화. 개별 클래스 또는 구성 요소의 동작을 늘리거나 확장하는 데 사용되는 경우가 많음
+</td>
+<td>
+더 높은 수준의 세분화. 여러 클래스 또는 모듈에 걸쳐 있는 교차 문제를 해결
+</td>
+</tr>
+<tr>
+<th>Composition vs. Interception</th>
+<td>
+여러 클래스 또는 모듈을 함께 "구성"하여 코드 재사용
+</td>
+<td>
+"가로채기"를 통해 코드 재사용. Aspects는 코드 실행에서 특정 지점(join point)을 가로채고 대상 개체 또는 메서드의 동작을 수정하거나 향상.
+</td>
+</tr>
+<tr>
+<th>Time of Application</th>
+<td>
+일반적으로 컴파일 시간 또는 클래스 상속 중에 적용
+</td>
+<td>
+런타임에 동적으로 aspect를 적용
+</td>
+</tr>
+</table>
+
+<br/>
+
+
