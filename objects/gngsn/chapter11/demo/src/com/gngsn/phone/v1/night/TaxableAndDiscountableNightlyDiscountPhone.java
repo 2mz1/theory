@@ -1,7 +1,6 @@
 package com.gngsn.phone.v1.night;
 
 import com.gngsn.phone.Money;
-import com.gngsn.phone.v1.TaxableNightlyDiscountPhone;
 
 import java.time.Duration;
 
