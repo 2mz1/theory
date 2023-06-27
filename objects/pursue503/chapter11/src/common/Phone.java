@@ -1,4 +1,4 @@
-package v2;
+package common;
 
 import common.Call;
 import common.Money;
@@ -21,4 +21,7 @@ public abstract class Phone {
 
     protected abstract Money afterCalculated(Money fee);
 
+    public List<Call> getCalls() {
+        return calls;
+    }
 }
