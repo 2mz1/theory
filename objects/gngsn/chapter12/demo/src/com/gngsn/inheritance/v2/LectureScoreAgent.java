@@ -8,8 +8,24 @@ import java.util.Arrays;
 
 public class LectureScoreAgent {
     public static void main(String[] args) {
-        calculateLectureByDijkstra();
-        calculateGradeLectureByDijkstra();
+        calculateLectureByDijkstra2();
+//        calculateGradeLectureByDijkstra();
+    }
+
+    /**
+     * 다익스트라 교수가 강의하는 알고리즘 과목의 성적 통계를 계산
+     */
+    private static void calculateLectureByDijkstra2() {
+        Lecture lecture = new GradeLecture("알고리즘",
+                70,
+                Arrays.asList(new Grade("A",100, 95),
+                        new Grade("B",94, 80),
+                        new Grade("C",79, 70),
+                        new Grade("D",69, 50),
+                        new Grade("F",49, 0)),
+                Arrays.asList(81, 95, 75, 50, 45));
+        GradeLecture gradeLecture = (GradeLecture) lecture;
+        System.out.println(gradeLecture);
     }
 
     /**

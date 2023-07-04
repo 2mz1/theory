@@ -21,4 +21,13 @@ public class Grade {
     public boolean include(int score) {
         return score >= lower && score <= upper;
     }
+
+    @Override
+    public String toString() {
+        return "Grade{" +
+                "name='" + name + '\'' +
+                ", upper=" + upper +
+                ", lower=" + lower +
+                '}';
+    }
 }

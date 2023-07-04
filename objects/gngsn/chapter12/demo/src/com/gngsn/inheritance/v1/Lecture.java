@@ -42,4 +42,13 @@ public class Lecture {
     private long failCount() {
         return scores.size() - passCount();
     }
+
+    @Override
+    public String toString() {
+        return "Lecture{" +
+                "pass=" + pass +
+                ", title='" + title + '\'' +
+                ", scores=" + scores +
+                '}';
+    }
 }

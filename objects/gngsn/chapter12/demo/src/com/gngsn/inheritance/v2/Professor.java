@@ -1,5 +1,6 @@
 package com.gngsn.inheritance.v2;
 
+import com.gngsn.inheritance.v1.GradeLecture;
 import com.gngsn.inheritance.v1.Lecture;
 
 /**
@@ -17,4 +18,10 @@ public class Professor {
         return String.format("[%s] %s - Avg: %.1f", name,
                 lecture.evaluate(), lecture.average());
     }
+
+    public void downcasting() {
+        this.lecture = (GradeLecture) this.lecture;
+    }
+
+
 }
