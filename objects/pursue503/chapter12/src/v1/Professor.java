@@ -2,7 +2,7 @@ package v1;
 
 import java.util.Arrays;
 
-public class Professor {
+public class pProfessor {
     private String name;
     private Lecture lecture;
 
