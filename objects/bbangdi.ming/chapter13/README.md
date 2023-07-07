@@ -29,7 +29,7 @@
         }
     }
   
-    public class bbangdi.ming.Something {
+    public class Something {
         public static void main(String[] args) {
             Square square = new Square(10, 10);
             square.reSize(square, 50, 100);
