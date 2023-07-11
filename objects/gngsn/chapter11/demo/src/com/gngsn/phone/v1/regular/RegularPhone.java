@@ -1,8 +1,8 @@
 package com.gngsn.phone.v1.regular;
 
+import com.gngsn.phone.Call;
 import com.gngsn.phone.Money;
 import com.gngsn.phone.v1.Phone;
-import duplicated.Call;
 
 import java.time.Duration;
 
