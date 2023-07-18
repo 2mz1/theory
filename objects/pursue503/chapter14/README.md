@@ -9,16 +9,16 @@
 - v1 → 일관성 없이 확장
 - v2 → 일관성 있는 확장
 
----
 
----
+
+
 
 # 1. 핸드폰 과금 시스템 변경하기
 
 **11장 핸드폰 과금 시스템 요금정책 수정**
 
 | 유형 | 형식 | 예 |
-| --- | --- | --- |
+|  |  |  |
 | 고정요금 방식 | A초당 B원 | 10초당 18원 |
 | 시간대별 방식 | A시부터 B시까지 C초당 D원
 B시부터 C시까지 C초당 E원 | 00시부터 19시까지 10초당 18원
@@ -352,7 +352,7 @@ public class DurationDiscountPolicy extends BasicRatePolicy {
     - 기존의 구현을 이해해야 하는 상황
 - 각 개발자가 `일관성` 을 유지 하지 않기 때문
 
----
+
 
 # 2.설계에 일관성 부여하기
 
@@ -408,7 +408,7 @@ public class DurationDiscountPolicy extends BasicRatePolicy {
     - 변하는 부분의 타입계층을 변하지 않는 부분에 `합성` 함
     
 
----
+
 
 # 3. 일관성 있는 기본 정책 구현하기
 
@@ -437,7 +437,7 @@ public class DurationDiscountPolicy extends BasicRatePolicy {
 
 ![Untitled](image/Untitled%206.png)
 
----
+
 
 ![Untitled](image/Untitled%207.png)
 
