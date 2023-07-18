@@ -1,4 +1,4 @@
-package v3;
+package v1;
 
 import common.Money;
 
