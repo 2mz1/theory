@@ -1,6 +1,5 @@
 package v2;
 
-import common.Call;
 import common.Money;
 
 import java.time.Duration;
