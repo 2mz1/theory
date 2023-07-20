@@ -1,0 +1,29 @@
+@startuml
+
+class NotificationController
+class Phone {
+    - RatePolicy ratePolicy;
+    - List<Call> calls = new ArrayList<>();
+    --
+    + Bill publishBill();
+}
+
+interface NotificationService {
+  + notify(String message)
+}
+
+class NotificationServiceImpl {
+  + notify(String message)
+}
+
+Bill -> Phone : notify()
+Bill -> Phone : publishBill()
+NotificationServiceImpl -d-* NotificationService
+NotificationServiceImpl -> Notification : send()
+
+AosNotification -d-* Notification
+AwsNotification -d-* Notification
+GoogleNotification -d-* Notification
+IosNotification -d-* Notification
+
+@enduml
