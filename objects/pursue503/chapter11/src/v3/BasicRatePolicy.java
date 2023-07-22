@@ -1,6 +1,5 @@
 package v3;
 
-import common.Call;
 import common.Money;
 
 public abstract class BasicRatePolicy implements RatePolicy {
