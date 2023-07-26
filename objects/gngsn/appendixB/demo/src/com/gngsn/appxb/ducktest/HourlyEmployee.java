@@ -1,4 +1,4 @@
-package com.gngsn.ducktest;
+package com.gngsn.appxb.ducktest;
 
 import com.gngsn.chapter2.v2.Money;
 

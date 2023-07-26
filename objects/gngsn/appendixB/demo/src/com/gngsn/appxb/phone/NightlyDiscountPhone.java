@@ -1,8 +1,11 @@
-package com.gngsn.phone;
+package com.gngsn.appxb.phone;
+
+import com.gngsn.phone.Call;
+import com.gngsn.phone.Money;
 
 import java.time.Duration;
 
-public class NightlyDiscountPhone extends com.gngsn.phone.Phone {
+public class NightlyDiscountPhone extends Phone {
 
     private static final int LATE_NIGHT_HOUR = 22;
 

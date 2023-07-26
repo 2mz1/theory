@@ -1,4 +1,4 @@
-package com.gngsn.game;
+package com.gngsn.appxb.game;
 
 public class Sound implements Effect {
 

@@ -1,4 +1,4 @@
-package com.gngsn.movie;
+package com.gngsn.appxb.movie;
 
 
 import com.gngsn.chapter2.v2.Money;
