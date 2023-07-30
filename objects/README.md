@@ -1,20 +1,20 @@
 ## 오브젝트
 
-<small>Objects - 코드로 이해하는 객체지향 설계, 조영호</small>
+<small><i>Objects - 코드로 이해하는 객체지향 설계, 조영호</i></small>
 
 <br/>
 
-<img src="./image/Objects.jpeg" width="958" />
+<img src="./image/Objects.jpeg" width="958px" />
 
 <br/>
 
-### Study Period
+## Study Period
 
 _2023-04-12 ~ 2023-07-19 (15주)_
 
 <br/>
 
-### Participants
+## Participants
 
 
 | Nickname                                                                     | Completed | 

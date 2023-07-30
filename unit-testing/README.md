@@ -1,20 +1,20 @@
 ## 단위 테스트
 
-<small>Unit Testing:Principles, Practices and Patterns , Vladimir Khorikov</small>
+<small>><i>Unit Testing:Principles, Practices and Patterns , Vladimir Khorikov</i></small>
 
 <br/>
 
-<img src="./image/unit-testing.jpeg" width="959" />
+<img src="./image/unit-testing.jpeg" width="959px" />
 
 <br/>
 
-### Study Period
+## Study Period
 
 _2023-08-02 ~ in progress_
 
 <br/>
 
-### Participants
+## Participants
 
 | Nickname                                                                      | Completed | 
 |-------------------------------------------------------------------------------|-----------|
