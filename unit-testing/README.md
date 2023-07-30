@@ -1,6 +1,6 @@
 ## 단위 테스트
 
-<small>><i>Unit Testing:Principles, Practices and Patterns , Vladimir Khorikov</i></small>
+<small><i>Unit Testing:Principles, Practices and Patterns , Vladimir Khorikov</i></small>
 
 <br/>
 
