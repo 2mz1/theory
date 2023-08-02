@@ -160,13 +160,13 @@ $$분기\ 커버리지 = \frac{통과\ 분기}{전체\ 분기\ 수}$$
 </code></pre></td>
 </tr><tr>
 <th>Code Coverage</th>
-<td> $$Code Coverage = \frac{4}{5} = 0.8 = 80\%$$ </td>
-<td> $$Code Coverage = \frac{3}{3} = 1 = 100\%$$ </td>
+<td> $$Code\ Coverage = \frac{4}{5} = 0.8 = 80\%$$ </td>
+<td> $$Code\ Coverage = \frac{3}{3} = 1 = 100\%$$ </td>
 <td> - </td>
 </tr><tr>
 <th>Branch Coverage</th>
-<td> $$Code Coverage = \frac{1}{2} = 0.5 = 50\%$$ </td>
-<td> $$Code Coverage = \frac{1}{2} = 0.5 = 50\%$$ </td>
+<td> $$Code\ Coverage = \frac{1}{2} = 0.5 = 50\%$$ </td>
+<td> $$Code\ Coverage = \frac{1}{2} = 0.5 = 50\%$$ </td>
 <td> - </td>
 </tr>
 </table>
