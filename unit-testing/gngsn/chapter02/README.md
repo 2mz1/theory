@@ -48,6 +48,8 @@
 | 단위 크기        | 단일 클래스 또는 클래스 세트                                                                       | 단일 클래스                                    |
 | 테스트 대역 사용 대상 | 공유 의존성                                                                         | 불변 의존성 외 모든 의존성                           |
 
+<br/>
+
 ## 2.1 '단위 테스트'의 정의
 
 **단위 테스트의 공통된 중요 속성**
@@ -57,7 +59,7 @@
 - 격리된 방식
 - 자동화된 테스트
 
-_'작은 코드 조각'은 '단위'와 동일하며, 이하부터 '단위'로 기술합니다._
+<small>'작은 코드 조각'은 '단위'와 동일하며, 이하부터 '단위'로 기술합니다.</small>
 
 <br/>
 
@@ -70,21 +72,24 @@ _'작은 코드 조각'은 '단위'와 동일하며, 이하부터 '단위'로 �
 ✔️ **코드**: **클래스의 모든 의존성을 테스트 대역(test double)으로 대체**
 
 <br/>
-<pre>
+<table><tr><td>
+
 📌  <b>테스트 대역</b>
+
 <cite> 
 Test Double is a generic term for any case where you replace a production object for testing purposes.
 - Martin Fowler
 </cite>
 
 : 테스트를 목적으로 객체를 특정 형태로 대체한 객체. 테스트 대상 객체가 객체 의존성으로 엮여 사용하기 힘들 때 대체할 수 있는 주변 객체.
-Types: Dummy, Stub, Spy, Mock, Fake
+
+_Types: Dummy, Stub, Spy, Mock, Fake_
 
 <b>장점</b>
 - 클래스의 직접적인 의존성 대체 가능
 - 의존성의 의존성을 다룰 필요 없음
 - 단위 테스트에서 준비를 크게 줄일 수 있음
-</pre>
+</td></tr></table>
 
 <br/>
 
@@ -211,7 +216,7 @@ Types: Dummy, Stub, Spy, Mock, Fake
 </pre>
 
 <pre>
-📌 <b></b>
+📌 <b>테스트 vs Mock</b>
 
 - <b>테스트 대역</b>: 실행과 관련 없이 모든 종류의 가짜 의존성을 설명하는 포괄적인 용어
 - <b>Mock</b>: 테스트 대상 시스템과 협력자 간의 상호 작용을 검사할 수 있는 특별한 테스트 대역
@@ -324,7 +329,7 @@ EX. <b>데이터 베이스</b>
 public void Purchase_fails_when_not_enough_inventory()
 {
     // 준비
-    <b>var storeMock = new Mock<IStore>();  // ①
+    var storeMock = new Mock<IStore>();  // ①
     storeMock
         .Setup(x => x.HasEnoughInventory(Product.Shampoo, 5)) // ②
         .Returns(true);
@@ -345,6 +350,7 @@ public void Purchase_fails_when_not_enough_inventory()
 - ① Store : 변경 가능한 비공개 의존성 
 - ② Product: 불변의 비공개 의존성 - Value Object
 
+<br/>
 
 <pre>
 📌 <b>협력자 vs 의존성</b>
@@ -410,6 +416,7 @@ Tip. 테스트는 코드의 단위로 테스트 하지 마라. 동작의 단위 
 - 테스트 주도 개발 TDD를 통한 시스템 설계 방식
 - 과도한 명세 *over-specification* 문제
 
+<br/>
 <pre>
 📌 <b>테스트 주도 개발</b>
 : TDD는 테스트에 의존해 프로젝트 개발을 추진하는 소프트웨어 개발 프로세스
@@ -434,3 +441,5 @@ Tip. 테스트는 코드의 단위로 테스트 하지 마라. 동작의 단위 
 ### 2.4.1 통합 테스트의 일부인 엔드 투 엔드 테스트
 
 - **엔드 투 엔드 테스트**: 애플리케이션과 함께 작동하는 프로세스 외부 의존성의 전부 또는 대부분에 직접 접근
+
+<br/><br/>
