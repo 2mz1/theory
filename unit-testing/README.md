@@ -4,7 +4,7 @@
 
 <br/>
 
-<img src="./image/unit-testing.jpeg" width="959px" />
+<img src="./image/unit-testing.jpeg" alt="Unit Testing" width="60%" />
 
 <br/>
 
