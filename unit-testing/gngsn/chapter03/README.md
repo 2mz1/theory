@@ -1,7 +1,7 @@
 # CHAPTER 3. 단위테스트의 구조
 
 **TL;DR**
-- **AAA 패턴**: Assert, Act, Assert Pattern. _준비 · 실행 · 검증_
+- **AAA 패턴**: Arrange, Act, Assert Pattern. _준비 · 실행 · 검증_
   - **① 준비 구절**: SUT과 해당 의존성을 원하는 상태로 만듦
   - **② 실행 구절**: SUT에서 메서드를 호출 · 준비된 의존성을 전달하며 · 출력 값 캡처
   - **③ 검증 구정**: 결과 검증
@@ -208,7 +208,7 @@ But 검증 구절이 너무 커지는 것은 경계해야 함
 
 <br/>
 
-```java
+<pre><code lang="java">
 public class CalculatorTests 
 {
 	[Fact]
@@ -217,7 +217,7 @@ public class CalculatorTests
 		// 준비
 		double first = 10;
 		double second = 20;
-		**var sut = new Calculator();**
+		<b>var sut = new Calculator();</b>
 
 		// 실행
 		double result = sut.Sum(first, second);
@@ -226,7 +226,7 @@ public class CalculatorTests
 		Assert.Equal(30, result);
 	}
 }
-```
+</code></pre>
 
 <br/>
 

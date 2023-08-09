@@ -18,11 +18,11 @@
     - **테스트 대역**: 실행과 관련 없이 모든 종류의 가짜 의존성을 설명하는 포괄적인 용어
     - **Mock**: 테스트 대상 시스템과 협력자 간의 상호 작용을 검사할 수 있는 특별한 테스트 대역
 - **의존성** 
-  - **공유 의존성** _shared dependecy_: 동일 프로세스 내 영향을 미칠 수 있는 의존성. (ex. `static mutable field`, 데이터베이스)
+  - **공유 의존성** _shared dependency_: 동일 프로세스 내 영향을 미칠 수 있는 의존성. (ex. `static mutable field`, 데이터베이스)
   - **비공개 의존성** _private dependency_: 공유하지 않는 의존성
   - **프로세스 외부 의존성** _out-of-process dependency_: 애플리케이션 실행 프로세스 외부에서 실행되는 의존성
-  - **싱글턴 의존성 singleton**: **보통은 공유 의존성**. 하지만, 각 테스트 별 새 인스턴스 만들 수 있으면 **공유 의존성이 아님**
-  - **설정 클래스 configuration class**: 일반적으로 한 개인 공유 클래스. 하지만, 다른 모든 의존성이 SUT에 주입되면 새 인스턴스 생성 가능
+  - **싱글턴 의존성** _singleton_: **보통은 공유 의존성**. 하지만, 각 테스트 별 새 인스턴스 만들 수 있으면 **공유 의존성이 아님**
+  - **설정 클래스** _configuration class_: 일반적으로 한 개인 공유 클래스. 하지만, 다른 모든 의존성이 SUT에 주입되면 새 인스턴스 생성 가능
   - **휘발성 의존성** _volatile dependency_: 런타임 환경의 설정 및 구성 요구 or 비결정적 동작 (각 호출에 대해 다른 결과를 제공) 포함
 - <table><tr><th>런던파 이점</th><th>고전파를 선호하는 필자의 견해</th></tr><tr><td>세밀한 테스트로 입자성이 좋음</td><td>테스트는 단위가 아닌 동작 단위를 검증해야 함</td></tr><tr><td>연결된 클래스 그래프가 커져도 테스트가 쉬움 (테스트 대역으로 대체됨)</td><td>애초에 상호 연결된 클래스의 크고 복잡한 그래프를 갖지 않아야 함</td></tr><tr><td>테스트 실패 시 어떤 기능이 실패했는지 알 수 있음</td><td>큰 이점은 아님. 마지막 수정한 부분이 버그의 원인일 것</td></tr></table>
 - **테스트 주도 개발**: TDD는 테스트에 의존해 프로젝트 개발을 추진하는 소프트웨어 개발 프로세스
@@ -74,16 +74,15 @@
 <br/>
 <table><tr><td>
 
-📌  <b>테스트 대역</b>
+📌 <b>테스트 대역</b>
 
-<cite> 
-Test Double is a generic term for any case where you replace a production object for testing purposes.
-- Martin Fowler
-</cite>
+> Test Double is a generic term for any case where you replace a production object for testing purposes. 
+>
+> _- Martin Fowler_
 
-: 테스트를 목적으로 객체를 특정 형태로 대체한 객체. 테스트 대상 객체가 객체 의존성으로 엮여 사용하기 힘들 때 대체할 수 있는 주변 객체.
+테스트를 목적으로 객체를 특정 형태로 대체한 객체. 테스트 대상 객체가 객체 의존성으로 엮여 사용하기 힘들 때 대체할 수 있는 주변 객체.
 
-_Types: Dummy, Stub, Spy, Mock, Fake_
+<small><i>Types: Dummy, Stub, Spy, Mock, Fake</i></small>
 
 <b>장점</b>
 - 클래스의 직접적인 의존성 대체 가능
@@ -109,7 +108,7 @@ _Types: Dummy, Stub, Spy, Mock, Fake_
 
 <br/>
 
-- **AAA Pattern**: Assert, Act, Assert Pattern. 준비-실행-검증 패턴.
+- **AAA Pattern**: Arrange, Act, Assert Pattern. 준비-실행-검증 패턴.
 
 <table> 
 <tr><th></th><th>Classic School</th><th>London School</th></tr>
@@ -121,9 +120,11 @@ _Types: Dummy, Stub, Spy, Mock, Fake_
     // 준비
     var store = new Store();
     store.AddInventory(Product.Shampoo, 10);
-    var customer = new Customer();<br/>
+    var customer = new Customer();
+
     // 실행
-    bool success = customer.Purchase(store, Product.Shampoo, 5);<br/>
+    bool success = customer.Purchase(store, Product.Shampoo, 5);
+
     // 검증
     Assert.True(success);
     Assert.Equal(5, store.GetInventory(Product.Shampoo));
@@ -137,10 +138,12 @@ _Types: Dummy, Stub, Spy, Mock, Fake_
     storeMock
         .Setup(x => x.HasEnoughInventory(Product.Shampoo, 5))
         .Returns(true);
-    var customer = new Customer();<br/>
+    var customer = new Customer();
+
     // 실행
     bool success = customer.Purchase(
-        stockMock.Object, Product.Shampoo, 5);<br/>
+        stockMock.Object, Product.Shampoo, 5);
+
     // 검증
     Assert.True(success);
     storeMock.Verify(
@@ -157,9 +160,11 @@ _Types: Dummy, Stub, Spy, Mock, Fake_
     // 준비
     var store = new Store();
     store.AddInventory(Product.Shampoo, 10);
-    var customer = new Customer();<br/>
+    var customer = new Customer();
+
     // 실행
-    bool success = customer.Purchase(store, Product.Shampoo, 15);<br/>
+    bool success = customer.Purchase(store, Product.Shampoo, 15);
+
     // 검증
     Assert.True(success);
     Assert.Equal(10, store.GetInventory(Product.Shampoo));  // 제품 수 변화 없음
@@ -168,13 +173,16 @@ _Types: Dummy, Stub, Spy, Mock, Fake_
 {
     // 준비
     <b>var storeMock = new Mock&lt;IStore&gt;();</b>
+
     storeMock
         .Setup(x => x.HasEnoughInventory(Product.Shampoo, 5))
         .Returns(true);
-    var customer = new Customer();<br/>
+    var customer = new Customer();
+
     // 실행
     bool success = customer.Purchase(
-        stockMock.Object, Product.Shampoo, 5);<br/>
+        stockMock.Object, Product.Shampoo, 5);
+
     // 검증
     Assert.True(success);
     storeMock.Verify(

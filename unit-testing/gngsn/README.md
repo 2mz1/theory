@@ -10,6 +10,10 @@
 <img src="image/overview.png" width="1618">
 <br/>
 </details>
+
+<br/>
+
+### _Part 1:_
 <details>
 <summary><b>CHAPTER 01. 단위 테스트의 목표</b></summary>
 
@@ -95,7 +99,7 @@
 <br/>
 
 **TL;DR**
-- **AAA 패턴**: Assert, Act, Assert Pattern. _준비 · 실행 · 검증_
+- **AAA 패턴**: Arrange, Act, Assert Pattern. _준비 · 실행 · 검증_
   - **① 준비 구절**: SUT과 해당 의존성을 원하는 상태로 만듦
   - **② 실행 구절**: SUT에서 메서드를 호출 · 준비된 의존성을 전달하며 · 출력 값 캡처
   - **③ 검증 구정**: 결과 검증
