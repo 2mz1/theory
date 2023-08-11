@@ -4,7 +4,7 @@
 
 <br/>
 
-<img src="./image/Objects.jpeg" width="958px" />
+<img src="./image/Objects.jpeg" alt="Objects" width="60%" />
 
 <br/>
 
