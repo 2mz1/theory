@@ -154,14 +154,14 @@ _코드 참고 - MessageRendererV1Test_
 
 코드 정확도와 테스트 결과에 대한 결과
 
-<img src="./image/image3.jpeg" />
+<br/><img src="./image/image3.jpeg" /><br/>
 
 _거짓 양성과 거짓 음성의 중요성_
 
-- **참 음성**: true negatives. 기능이 의도한 대로 잘 작동하는 상황을 테스트가 통과하도록 올바른 추론한 경우
-- **참 양성**: false positives. 기능이 제대로 작동하지 않는 상황을 테스트가 실패하도록 올바른 추론한 경우 ← 단위 테스트의 핵심
-- **거짓 음성**: false negatives. 기능이 제대로 작동하지 않는 상황을 테스트가 통과하도록 잘못된 추론한 경우
-- **거짓 양성**: false positives. 기능이 의도한 대로 잘 작동하는 상황을 실패하도록 잘못된 추론한 경우 ← 허위 경보. 리팩터링 내성을 통해 방지 가능
+- **참 음성**: True negatives. 기능이 의도한 대로 잘 작동하는 상황을 테스트가 통과하도록 올바른 추론한 경우
+- **참 양성**: True positives. 기능이 제대로 작동하지 않는 상황을 테스트가 실패하도록 올바른 추론한 경우 ← 단위 테스트의 핵심
+- **거짓 음성**: False negatives. 기능이 제대로 작동하지 않는 상황을 테스트가 통과하도록 잘못된 추론한 경우
+- **거짓 양성**: False positives. 기능이 의도한 대로 잘 작동하는 상황을 실패하도록 잘못된 추론한 경우 ← 허위 경보. 리팩터링 내성을 통해 방지 가능
 
 <br/>
 
@@ -290,7 +290,7 @@ public void GetById_executes_correct_SQL_code()
 
 아래 형태로 변형해도 결과는 모두 동일
 
-```csharp
+```sql
 SELECT * FROM dbo.[User] WHERE UserID = 5
 SELECT * FROM dbo.User WHERE UserID = 5
 SELECT UserID, Name, Email FROM dbo.[User] WHERE UserID = 5
@@ -303,7 +303,10 @@ SELECT * FROM dbo.[User] WHERE UserID = @UserID
 
 좋은 단위 테스트의 처음 세 가지 특성은 상호 배타적
 
+<br/>
+
 ✔️ 세 가지 특성 모두를 양보할 만큼 서로 조금씩 인정하는 것
+
 But, **리팩터링 내성을 최대한 많이 갖는 것을 목표** + 테스트가 얼마나 버그를 잘 찾아내는지와 얼마나 빠른지 사이의 절충안
 
 <br/><img src="./image/image5.png" width="50%" /><br/>
@@ -313,6 +316,8 @@ But, **리팩터링 내성을 최대한 많이 갖는 것을 목표** + 테스�
 ## 5. 대중적인 테스트 자동화 개념
 
 ### 5.1 테스트 피라미드 분해 
+
+<br/><img src="./image/image6.png" /><br/>
 
 <pre>
 📌 <b>테스트 피라미드</b>
