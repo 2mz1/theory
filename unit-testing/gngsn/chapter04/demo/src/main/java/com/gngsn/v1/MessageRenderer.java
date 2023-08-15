@@ -1,8 +1,8 @@
-package com.gngsn;
+package com.gngsn.v1;
 
-import com.gngsn.renderer.BodyRenderer;
-import com.gngsn.renderer.FooterRenderer;
-import com.gngsn.renderer.HeaderRenderer;
+import com.gngsn.v1.renderer.BodyRenderer;
+import com.gngsn.v1.renderer.FooterRenderer;
+import com.gngsn.v1.renderer.HeaderRenderer;
 
 import java.util.List;
 import java.util.stream.Collectors;
