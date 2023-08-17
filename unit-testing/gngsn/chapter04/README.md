@@ -154,7 +154,7 @@ _코드 참고 - MessageRendererV1Test_
 
 코드 정확도와 테스트 결과에 대한 결과
 
-<br/><img src="./image/image3.jpeg" /><br/>
+<br/><img src="./image/image3.jpeg" width="70%" /><br/>
 
 _거짓 양성과 거짓 음성의 중요성_
 
@@ -231,7 +231,7 @@ _곱셈 법칙에 의해 어떤 특성이라도 0이 되면 전체가 0이 됨_
 처음 세 가지 (회귀 방지 · 리팩터링 내성 · 빠른 피드백)는 상호 배타적: 셋 중 하나를 희생해야 나머지 둘을 최대로 할 수 있음
 
 
-<br/><img src="./image/image4.png" width="40%" /><br/>
+<br/><img src="./image/image4.png" width="50%" /><br/>
 
 <br/>
 
@@ -317,7 +317,7 @@ But, **리팩터링 내성을 최대한 많이 갖는 것을 목표** + 테스�
 
 ### 5.1 테스트 피라미드 분해 
 
-<br/><img src="./image/image6.png" /><br/>
+<br/><img src="./image/image6.png" width="50%" /><br/>
 
 <pre>
 📌 <b>테스트 피라미드</b>
