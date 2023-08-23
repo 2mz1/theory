@@ -153,15 +153,13 @@ public void Creating_a_report()
 
 <br/>
 
-
 ### 목과 스텁 함께 쓰기
-
 
 <br/>
 
 ### 목과 스텁은 명령과 조회에 어떻게 관련돼 있는가?
 
-- **CQS 원칙**: Command Query Separation. 모든 메서드는 명령이거나 조회. 이 둘을 혼용해서는 안 됨. 
+- **CQS 원칙**: Command Query Separation. 모든 메서드는 명령이거나 조회. 이 둘을 혼용해서는 안 됨.
 
 ✔️ **명령**: 사이드 이펙트를 일으키고 어떤 값도 반환하지 않는 메서드(void 반환)
 
@@ -198,6 +196,7 @@ mock.Verify(x => x.SendGreetingsEmail("user@email.com"));
 var stub = new Mock<IDatabase>();
 stub.Setup(x => x.GetNumberOfUsers()).Returns(10);
 ```
+
 </td>
 <tr>
 <td>
@@ -238,7 +237,6 @@ stub.Setup(x => x.GetNumberOfUsers()).Returns(10);
     - 클라이언트가 목표를 달성하는 데 도움이 되는 연산 operation을 노출하라.
     - 클라이언트가 목표를 달성하는 데 도움이 되는 상태 state를 노출하라.
 
-
 구현 세부 사항을 노출하면 불변성 위반을 가져옴.
 
 <br/>
@@ -247,8 +245,7 @@ stub.Setup(x => x.GetNumberOfUsers()).Returns(10);
 
 ### 3.1 육각형 아키텍처의 정의
 
-<br/><img src="./image/image08.jpeg" width="60%" /><br/>
-
+<br/><br/><img src="./image/image08.jpeg" width="60%" /><br/>
 
 - Domain: 애플리케이션의 중심부
 - Application: 애플리케이션의 필수 기능, 비즈니스 로직 포함
@@ -257,17 +254,20 @@ stub.Setup(x => x.GetNumberOfUsers()).Returns(10);
 
 **육각형 아키텍처의 주요 관점 세 가지**
 
-1. 도메인과 애플리케이션 서비스 계층 간의 관심사 분리 
-   - 도메인 계층의 관심사: 오직 비즈니스 로직에 대한 책임
-   - 애플리케이션 서비스 계층의 관심사: 도메인 계층과 외부 애플리케이션 간의 작업 조정
-   - 육각형: 애플리케이션 서비스 계층과 도메인 계층의 조합, 애플리케이션을 나타냄. 다른 애플리케이션과 소통할 수 있음
-   - 도메인 계층을 애플리케이션의 도메인 지식(사용 방법) 모음으로, 애플리케이션 서비스 계층을 일련의 비즈니스 유스케이스(사용 대상)로 볼 수 있음
+1. 도메인과 애플리케이션 서비스 계층 간의 관심사 분리
+    - _The separation of concerns between the domain and application services layers_
+    - 도메인 계층의 관심사: 오직 비즈니스 로직에 대한 책임
+    - 애플리케이션 서비스 계층의 관심사: 도메인 계층과 외부 애플리케이션 간의 작업 조정
+    - 육각형: 애플리케이션 서비스 계층과 도메인 계층의 조합, 애플리케이션을 나타냄. 다른 애플리케이션과 소통할 수 있음
+    - 도메인 계층을 애플리케이션의 도메인 지식(사용 방법) 모음으로, 애플리케이션 서비스 계층을 일련의 비즈니스 유스케이스(사용 대상)로 볼 수 있음
 2. 애플리케이션 내부 통신
-   - 도메인 계층은 외부 환경에서 완전히 격리
-   - 애플리케이션 서비스 계층에서 도메인 계층으로 흐르는 단방향 의존성 흐름
+    - _Communications inside your application_
+    - 도메인 계층은 외부 환경에서 완전히 격리
+    - 애플리케이션 서비스 계층에서 도메인 계층으로 흐르는 단방향 의존성 흐름
 3. 애플리케이션 간의 통신
-   - 도메인 계층에 직접 접근 불가
-   - 애플리케이션 서비스 계층이 유지하는 공통 인터페이스를 통해 연결
+    - _Communications between applications_
+    - 도메인 계층에 직접 접근 불가
+    - 애플리케이션 서비스 계층이 유지하는 공통 인터페이스를 통해 연결
 
 설계된 AP의 원칙에는 프랙탈 fractal 특성 - 전체 계층만큼 크게도, 단일 클래스만큼 작게도 똑같이 적용
 
@@ -290,18 +290,65 @@ stub.Setup(x => x.GetNumberOfUsers()).Returns(10);
 
 ### 3.3 시스템 내부 통신과 시스템 간 통신의 예
 
-<br/>
+```csharp
+public class CustomerController {
+    public bool Purchase(int customerId, int productId, int quantity) {
+        Customer customer = customerRepository.GetById(customerId);
+        Product product = productRepository.GetById(productId);
 
-## 4. 단위 테스트의 고전파와 런던파 재고
+        bool isSuccess = customer.Purchase(mainStore, product, quantity);
+
+        if (isSuccess) {
+            emailGateway.SendReceipt(customer.Email, product.Name, quantity);
+        }
+
+        return isSuccess;
+    }
+}
+```
+
+<br/><img src="./image/image13.jpeg" width="60%" /><br/>
+
+- **시스템 간 통신**: CustomerController 애플리케이션 서비스와 두 개의 외부 시스템 - Third-party system (유스케이스를 시작하는 클라이언트이기도 함) & Email Gateway - 간의 통신
+- **시스템 내부 통신**: customer와 store 도메인 클래스 간의 통신
 
 <br/>
 
 ### 4.1 모든 프로세스 외부 의존성을 목으로 해야 하는 것은 아니다
 
+<small>(2장 리마인드)</small>
+
+- **공유 의존성**: _Shared dependency_. 테스트 간에 공유하는 의존성. 제품 코드 x
+- **프로세스 외부 의존성**: _Out-of-process dependency_. 프로그램의 실행 프로세스 외에 다른 프로세스를 점유하는 의존성
+  - ex. Database, Message bus, SMTP service 등
+- **비공개 의존성**: _Private dependency_. 공유하지 않는 모든 의존성
+
+<br/>
+
+고전파에서는 공유 의존성을 피할 것을 권고
+- 테스트가 실행 컨텍스트를 서로 방해 하고, 결국 병렬 처리를 할 수 없기 때문
+- 테스트 격리: 테스트를 병렬적, 순차적 또는 임의의 순서로 실행할 수 있는 것
+
+만약 공유 의존성이 프로세스 밖에 있는 것이 아니면, 각각의 테스트 실행 내에서 새로운 인스턴스를 제공하면 되기 때문에 재사용을 피하기 쉬워진다.
+
+<small>(If a shared dependency is not out-of-process, then it’s easy to avoid reusing it in tests by providing a new instance of it on each test run.)</small>
+
+
+공유 의존성이 프로세스 외부에 있으면, 테스트가 더 복잡해짐
+
+- 각 테스트 실행 전, 데이터베이스를 인스턴스화하거나 메시지 버스를 새로 준비할 수가 없기 때문
+- 이렇게 하면 테스트 스위트가 현저히 느려질 것
+
+👉🏻일반적인 접근법은 이러한 의존성을 테스트 대역, 즉 목과 스텁으로 교체하는 것
+
 <br/>
 
 ### 4.2 목을 사용한 동작 검증
 
-
+- Mock을 이용해 동작 검증을 할 수 있다는 말은 대부분 사실이 아님 
+  - Mock(목표를 달성하고자 각 개별 클래스가 이웃 클래스와 소통하는 방식)은 '식별할 수 있는 동작 (구현 세부 사항)'과는 아무런 관계가 없음. 
+- 목을 통한 동작 검증의 경우
+  - 애플리케이션의 경계를 넘나드는 상호 작용을 검증할 때
+  - 혹은, 위 경우, 상호 작용의 사이드 이펙트가 외부 환경에서 보일 때
 
 <br/><br/>
