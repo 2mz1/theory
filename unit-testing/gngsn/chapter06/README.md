@@ -127,7 +127,7 @@ Controller 와 IEmailGateway 사이의 (SendGreetingsEmail) 를 통한 협력 �
 
 ## 2. 단위 테스트 스타일 비교
 
-> <b>좋은 단위 테스트의 4대 요소</b> <br/> 
+> <b>좋은 단위 테스트의 4대 요소</b> <br/>
 > : 회귀 방지 / 리팩터링 내성 / 빠른 피드백 / 유지 보수성
 
 <br/>
@@ -140,11 +140,11 @@ Controller 와 IEmailGateway 사이의 (SendGreetingsEmail) 를 통한 협력 �
   - **도메인 유의성** _domain significance_
 - 보통 위 세 특성에 대해, 어떤 스타일도 딱히 이점은 없음
 - 예외: Communication-based style
-  - 작은 부분의 코드 조각만을 검증하고, 모두 목을 사용하는 등 의미없는 *shallow* 테스트가 될 수 있음
+  - 작은 부분의 코드 조각만을 검증하고, 모두 목을 사용하는 등 의미없는 _shallow_ 테스트가 될 수 있음
   - 다만, 모든 Communication-based style 를 단정짓는 특징이 아니라, 극단적인 케이스를 말하는 것
   - (not definitive feature, but rather is extreme case)
 
-참고: 번역에서 말하는 '피상적인 테스트'는 shallowness를 의역. 얕은 의미의 테스트로, 역자는 이를 피상적, 즉 형식적인 테스트라고 번역 
+참고: 번역에서 말하는 '피상적인 테스트'는 shallowness를 의역. 얕은 의미의 테스트로, 역자는 이를 피상적, 즉 형식적인 테스트라고 번역
 
 <br/>
 
@@ -155,16 +155,15 @@ Controller 와 IEmailGateway 사이의 (SendGreetingsEmail) 를 통한 협력 �
 
 <br/>
 
-### ✔️ ≪리팩터링 내성 지표≫ 로 스타일 비교하기
+### ✔️ ≪리팩터링 내성 지표≫ 로 스타일 비교
 
 > 리패터링 내성: 리팩터링 중에 발생하는 거짓 양성(허위 경보) 수에 대한 척도
 
 - 거짓 양성은 코드의 구현 세부 사항에 결합된 테스트의 결과
 
-| <b>출력 기반 테스트 <br/><small>Output-based testing</small></b> | <b>상태 기반 테스트 <br/><small>State-based testing</small></b>                         | <b> 통신 기반 테스트 <br/><small>Communication-based testing</small></b>                                                                              |
-|-----------------------------------------------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| 대상 메서드에만 결합<br/>👉🏻 거짓 양성에 우수                            | 일반적으로 거짓 양성이 되기 쉬움<br/>상태 기반 테스트는 큰 API 노출 영역에 의존<br/>👉🏻 구현 세부 사항과 결합할 가능성도 높음 | 허위 경보에 가장 취약<br/>- 스텁과 상호 작용하는 경우를 나타냄 👉🏻상호작용 테스트 X<br/>- 애플리케이션 외부와의 상호 작용에 부작용이 보이는 경우에만 Mock을 사용할만 함    |
-
+| <b>출력 기반 테스트 <br/><small>Output-based testing</small></b> | <b>상태 기반 테스트 <br/><small>State-based testing</small></b>                                                              | <b> 통신 기반 테스트 <br/><small>Communication-based testing</small></b>                                                                                               |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 대상 메서드에만 결합<br/>👉🏻 거짓 양성에 우수                     | 일반적으로 거짓 양성이 되기 쉬움<br/>상태 기반 테스트는 큰 API 노출 영역에 의존<br/>👉🏻 구현 세부 사항과 결합할 가능성도 높음 | 허위 경보에 가장 취약<br/>- 스텁과 상호 작용하는 경우를 나타냄 👉🏻상호작용 테스트 X<br/>- 애플리케이션 외부와의 상호 작용에 부작용이 보이는 경우에만 Mock을 사용할만 함 |
 
 <br/>
 
@@ -176,6 +175,8 @@ Controller 와 IEmailGateway 사이의 (SendGreetingsEmail) 를 통한 협력 �
   - 테스트가 크면, 코드를 파악하기도 변경하기도 어려움 -> 유지 보수 어려움
 - 테스트를 실행하기 얼마나 어려운가 👉🏻 테스트가 얼마나 많은 외부 의존성과 직접적으로 의존되는지
   - 외부 의존성은 외부 리소스 운영에 시간이 필요하기 때문에 유지보수 어려움
+
+<br/>
 
 <table>
 <tr>
@@ -211,6 +212,7 @@ public void Adding_a_comment_to_an_article() {
     Assert.Equal(now, sut.Comments[0].DateCreated);   ①
 }
 ```
+
 <small>글에 댓글 추가 기능 확인 테스트</small>
 
 ① : 글 상태 검증
@@ -220,13 +222,13 @@ public void Adding_a_comment_to_an_article() {
 - 제한: 값 객체를 반환할 수 있을 때만 사용 가능
 
 ```csharp
-    sut.ShouldContainNumberOfComments(1).WithComment(text, author, now);
+sut.ShouldContainNumberOfComments(1).WithComment(text, author, now);
 ```
 
 혹은
 
 ```csharp
-    sut.Comments.Should().BeEquivalentTo(comment);
+sut.Comments.Should().BeEquivalentTo(comment);
 ```
 
 </td>
@@ -237,28 +239,27 @@ public void Adding_a_comment_to_an_article() {
 - mock chain
   (mocks or stubs returning other mocks, which also return mocks, and so on, several layers deep)
 
-
 </td>
 </tr>
 </table>
 
 <br/>
 
-### 2.4 스타일 비교: 결론 
+### 2.4 스타일 비교: 결론
 
-
-|            | <b>출력 기반 테스트 <br/><small>Output-based testing</small></b> | <b>상태 기반 테스트 <br/><small>State-based testing</small></b> | <b> 통신 기반 테스트 <br/><small>Communication-based testing</small></b> |
-|------------|-----------------------------------------------------------|----------------------------------------------------------|-------------------------------------------------------------------|
-| 리팩터링 내성 위험 | 낮음                                                        | 중간                                                       | 중간                                                                |
-| 유지비        | 낮음                                                        | 중간                                                       | 높음                                                                |
+|                    | <b>출력 기반 테스트 <br/><small>Output-based testing</small></b> | <b>상태 기반 테스트 <br/><small>State-based testing</small></b> | <b> 통신 기반 테스트 <br/><small>Communication-based testing</small></b> |
+| ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| 리팩터링 내성 위험 | 낮음                                                             | 중간                                                            | 중간                                                                     |
+| 유지비             | 낮음                                                             | 중간                                                            | 높음                                                                     |
 
 항상 출력 기반 테스트를 선호하라
 
 <br/>
 
-## 3. 함수형 아키텍처 이해 
+## 3. 함수형 아키텍처 이해
 
 함수형 프로그래밍
+
 - 스콧 블라신: https://fsharpforfunandprofit.com/books/
 
 <br/>
@@ -267,7 +268,7 @@ public void Adding_a_comment_to_an_article() {
 
 함수형 프로그래밍: mathematical function (pure function) 을 사용한 프로그래밍
 
-- 모든 입출력은 메서드 이름, 인수, 반환 타입으로 구성된 메서드 시그니처 *method sighature* 에 명시해야 함
+- 모든 입출력은 메서드 이름, 인수, 반환 타입으로 구성된 메서드 시그니처 _method sighature_ 에 명시해야 함
 
 ```csharp
 public decimal CalculateDiscount(Product[] products) {
@@ -284,7 +285,7 @@ public decimal CalculateDiscount(Product[] products) {
 
 **메소드 시그니처를 통해 입출력을 명시하지 않았을 때**:
 
-- **Side effects**: 시그니처에 표시되지 않은 숨어있는 출력으로, 연산은 인스턴스의 상태를 변경할 때 Side Effect를 야기할 수 있음 
+- **Side effects**: 시그니처에 표시되지 않은 숨어있는 출력으로, 연산은 인스턴스의 상태를 변경할 때 Side Effect를 야기할 수 있음
 - **Exceptions**: 메소드가 Exception 을 던질 때, 메소드의 시그니처에 설계된 계약(Contract) 을 우회 _bypass_ 하는 프로그램의 흐름을 만들어내기 때문에 시그니처에 명시하지 않은 output을 소개 추가
 - **A reference to an internal or external state**: `DateTime.Now` 와 같은 정적 속성을 사용하는 현재 시간을 얻을 수 있음. 데이터베이스나 private mutable field 를 참조할 수 있음. 이 것들은 메소드 시그니처에 명시되지 않은 동작을 제공하는 숨어있는 input 임
 
@@ -292,7 +293,6 @@ public decimal CalculateDiscount(Product[] products) {
 
 - 메소드의 pure function 여부를 판별하기 위해서는 ≪프로그램의 동작을 변경하지 않고 해당 메서드에 대한 호출을 반환 값으로 대체할 수 있는지 확인하는 것≫.
 - **참조 투명성**: _referential transparency_. 메서드 호출을 특정 값으로 바꾸는 것.
-
 
 ```csharp
 public Comment AddComment(string text) {
@@ -306,13 +306,12 @@ public Comment AddComment(string text) {
 
 ### 3.2 함수형 아키텍처란?
 
-
 **함수형 프로그래밍의 목표**
 
 &#x3A; 부작용을 완전히 제거하는 것이 아니라 **business logic**과 **side effects** 코드를 분리하는 것
 
 - **결정을 내리는 코드** _Code that makes a decision_:
-  - Side Effect가 없기 때문에 Mathematical Function을 작성할 수 있음 
+  - Side Effect가 없기 때문에 Mathematical Function을 작성할 수 있음
   - = **functional core** (함수형 코어)
   - = immutable core (불변 코어)
 - **해당 결정에 작용하는 코드** _Code that acts upon that decision_:
@@ -337,8 +336,8 @@ public Comment AddComment(string text) {
 
 > Object-oriented programming makes code **understandable by encapsulating moving parts**.
 > Functional programming makes code understandable by minimizing moving parts.
-> 
-> 함수형 프로그래밍은 작동 부분을 최소화해 코드를 이해할 수 있게 한다. 
+>
+> 함수형 프로그래밍은 작동 부분을 최소화해 코드를 이해할 수 있게 한다.
 > 객체지향 프로그래밍은 작동 부분을 캡슐화해 코드를 이해할 수 있게 한다.
 
 불변 클래스를 사용하면 변경할 수 없는 것을 처음부터 변형할 수 없으므로 상태 변질에 대해 걱정할 필요가 없다.
@@ -349,10 +348,12 @@ public Comment AddComment(string text) {
 ### 3.3 함수형 아키텍처 vs 육각형 아키텍처
 
 **유사점**
+
 - 육각형 아키텍처에서 도메인 계층내 클래스는 서로에게만 의존해야 함
 - 의존성 간의 단방향 흐름: 도메인 계층 내 클래스는 서로에게만 의존해야 함
 
 **차이점**
+
 - Side Effect 처리
   - 함수형 아키텍처: 모든 부작용을 불변 코어에서 비즈니스 연산 (가변 셸이 처리하는) 가장자리로 밀어냄
   - 육각형 아키텍처: 도메인 계층에 제한하는 한, 도메인 계층으로 인한 부작용도 문제 없음
@@ -370,7 +371,7 @@ public Comment AddComment(string text) {
 
 - 샘플 프로젝트는 조직의 모든 방문자를 추적하는 감사 시스템
 
-<br/><img src="image/image11.png" width="80%" /><br/>
+<br/><img src="image/image11.png" width="60%" /><br/>
 
 - 표시된 구조로 텍스트 파일을 기반 저장소로 사용
 - 이 시스템은 가장 최근 파일의 마지막 줄에 방문자의 이름과 방문시간을 추가
@@ -383,12 +384,14 @@ public Comment AddComment(string text) {
 - 파일 시스템과 밀접하게 연결 → 병목 지점: 파일 시스템
 - 테스트 전에 파일을 올바른 위치에 배치하고, 테스트가 끝나면 해당 파일을 읽고 내용을 확인한 후 삭제해야 함
 
-|         | 초기버전 |
-|---------|------|
-| 회귀방지    | 좋음   |
-| 리팩터링 내성 | 좋음   |
-| 빠른 피드백  | 나쁨   |
-| 유지보수성   | 나쁨   |
+<br/><img src="image/image12.png" width="80%" /><br/>
+
+|               | 초기버전 |
+| ------------- | -------- |
+| 회귀방지      | 좋음     |
+| 리팩터링 내성 | 좋음     |
+| 빠른 피드백   | 나쁨     |
+| 유지보수성    | 나쁨     |
 
 <br/>
 
@@ -396,26 +399,145 @@ public Comment AddComment(string text) {
 
 테스트가 밀접하게 결합된 문제는 일반적으로 파일 시스템을 목으로 처리해 해결
 
+<br/><img src="image/image13.png" width="70%" /><br/>
+
 **AuditManager Version 2**
 
 이제 Audithanager가 파일 시스템에서 분리되므로, 공유 의존성이 사라지고 테스트를 서로 독립적으로 실행할 수 있음
 
+```java
+public class AuditManagerTest {
+
+   @Test
+   public void newFileIsCreatedWhenTheCurrentFileOverflows() {
+       IFileSystem fileSystemMock = mock(IFileSystem.class);                // ①
+       fileSystemMock.getFiles("audits").thenReturn(new String[] {          // ①
+               "audits/audit_1.txt",                                        // ①
+               "audits/audit_2.txt"                                         // ①
+       });                                                                  // ①
+       fileSystemMock.readAllLines("audits/audit_2.txt")                    // ①
+                .thenReturn(Arrays.asList(                                  // ①
+                    "Peter;2019-04-06T16:30:00",                            // ①
+                    "Jane;2019-04-06T16:40:00",                             // ①
+                    "Jack;2019-04-06T17:00:00"                              // ①
+                ));
+
+
+       AuditManager sut = new AuditManager(3, "audits", fileSystemMock);
+       sut.addRecord("Alice", LocalDateTime.parse("2019-04-06T18:00:00"));
+
+       verify(fileSystemMock).writeAllText(                                 // ②
+               "audits/audit_3.txt",                                        // ②
+               "Alice;2019-04-06T18:00:00");                                // ②
+   }
+}
+```
+
+① File System → Audit System - Stub
+② Audit System → File System - Mocking
+
+- 목을 사용하기 적절한 유스케이스
+- 파일 시스템에 접근하지 않기 때문에 더 빨리 실행됨
+
+|               | Initial version | With mocks |
+| ------------- | --------------- | ---------- |
+| 회귀방지      | Good            | Good       |
+| 리팩터링 내성 | Good            | Good       |
+| 빠른 피드백   | Bad             | Good       |
+| 유지보수성    | Bad             | Moderate   |
 
 <br/>
 
+### 4.3 함수형 아키텍처로 리팩터링
 
+**AuditManager Version 3**
 
+- AuditManager는 **디렉터리 경로** 대신 **FileContent 배열을 받음**
+- 파일 시스템에 대해 알아야 할 모든 것을 포함
+- 작업 디랙터리에서 내용을 읽고 AuditManager 에서 받은 업데이트 명령을 작업 디렉터리에 다시 수행하기만 하면 됨
+- 복잡도는 AuditManager 에서만 존재
 
+<br/>
 
+✔️ Hexagonal Architecture (육각형 아키텍처)에서 **함수형 코어**와 **가변 셸**이 협력하기 위해선,
+Application Service로 외부 클라이언트를 위한 시스템의 진입점을 제공해야 함
 
+<br/>
+
+| Hexagonal                 | Audit System                  |
+| ------------------------- | ----------------------------- |
+| Domain Model Layer        | AuditManager                  |
+| Application Service Layer | ApplicationService, Persister |
+
+<br/>
+
+```csharp
+[Fact]
+public void A_new_file_is_created_when_the_current_file_overflows() {
+    var sut = new AuditManager(3);
+    var files = new FileContent[] {
+        new FileContent("audit_1.txt", new string[0]),
+        new FileContent("audit_2.txt", new string[] {
+            "Peter; 2019-04-06T16:30:00",
+            "Jane; 2019-04-06T16:40:00",
+            "Jack; 2019-04-06T17:00:00"
+        })
+    };
+
+    FileUpdate update = sut.AddRecord(
+        files, "Alice", DateTime.Parse("2019-04-06T18:00:00"));
+
+    Assert.Equal("audit_3.txt", update.FileName);
+    Assert.Equal("Alice;2019-04-06T18:00:00", update.NewContent);
+}
+```
+
+피드백 속도 향상 뿐 아니라, 유지 보수성 지표도 향상됨
+
+|               | Initial version | With mocks | With mocks |
+| ------------- | --------------- | ---------- | ---------- |
+| 회귀방지      | Good            | Good       | Good       |
+| 리팩터링 내성 | Good            | Good       | Good       |
+| 빠른 피드백   | Bad             | Good       | Good       |
+| 유지보수성    | Bad             | Moderate   | Good       |
+
+<br/>
+
+### 4.4 예상되는 추가 개발
+
+추가적인 기능이 필요하게 되어도 함수형 아키텍처를 사용하면 메서드 시그니처에 단순히 명시함하여 확장할 수 있음
+
+<br/>
+
+## 5. 함수형 아키텍처의 단점 이해하기
+
+### 5.1 함수형 아키텍처 적용 가능성
+
+<pre lang="java">
+public FileUpdate AddRecord(
+    FileContent[] files, string visitorName,
+    DateTime timeOfVisit, <b>IDatabase database</b>
+)
+</pre>
+
+- IDatabase 라는 숨은 입력이 생길 수 있음
+
+**두 가지 해결책**
+
+- `Application Service` 전면에서 디렉터리 내용과 더불어 방문자 접근 레벨을 수집
+  - 특징: AuditManager에 모든 의사결정 있음 - 비즈니스 로직과 외부 시스템과의 통신을 완전히 분리
+  - 단점: 성능 저하 - 접근 레벨 필요 없어도 DB에 계속 질의
+- `AuditManager`에 `IsAccessLevelCheckRequired()` 와 같은 메서드 생성. AddRecord() 호출 전 호출하고, true일 때 DB 접근 레벨을 가져온 후 `AddRecord()`에 전달
+  - 특징: 성능을 위해 분리를 다소 완화
+  - 단점: DB 호출의 결정 AuditManager 가 아닌 ApplicationService로 이동
+
+✔️ 함수형 코어의 클래스는 협력자로 작동하면 안 되고, 작업의 결과인 값으로 작동해야 함
+
+<br/>
+
+### 5.3 코드베이스 크기 증가
+
+- 항상 시스템의 복잡도와 중요성을 고려해 함수형 아키텍처를 전략적으로 적용하라
+- 함수형 방식에서 순수성에 많은 비용이 든다면 순수성을 따르지 마라
 
 <br/><br/>
-
-
-
-
-
-
-
-
-
