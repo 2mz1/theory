@@ -1,15 +1,15 @@
-package com.gngsn.cms.v2;
+package com.gngsn.cms.v3;
 
-
+/**
+ * Version 3. UserFactory 추가
+ * - User 객체를 직접 인스턴스화 했던 의존성 완화
+ */
 public class UserController {
     private final Database database = new Database();       // ① 프로세스 외부 의존성(Database와 MessageBus)이 직접 인스턴스화
     private final MessageBus messageBus = new MessageBus();
 
     public void changeEmail(int userId, String newEmail) throws Exception {
-        Object[] data = database.getUserById(userId);
-        String email = (String)data[1];
-        UserType type = (UserType)data[2];
-        User user = new User(userId, email, type);            // ② 컨트롤러가 데이터베이스 데이터를 User 인스턴스화
+        User user = UserFactory.Create(database.getUserById(userId));
 
         Object[] companyData = database.getCompany();
         String companyDomainName = (String) companyData[0];

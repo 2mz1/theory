@@ -199,6 +199,7 @@ Example.
 
 따라서, **지나치게 복잡한 코드** _Overcomplicated code_ 에 해당
 
+<br/>
 
 **활성 레코드 패턴** _Active Record Pattern_
 : 도메인 클래스가 스스로 데이터베이스를 검색하고 다시 저장하는 이러한 방식
@@ -206,10 +207,13 @@ Example.
 - 단순한 프로젝트나 단기 프로젝트에서는 잘 작동하지만 코드베이스가 커지면 확장하지 못하는 경우가 많음
 - **비즈니스 로직**과 **프로세스 외부 의존성과의 통신** 사이에 **분리가 없기 때문**
 
+<br/>
 
 ### STEP 1. 암시적 의존성을 명시적으로 만들기
 테스트 용이성을 개선하는 일반적인 방법은 암시적 의존성을 명시적으로 만드는 것
 - 도메인 모델은 외부 시스템과의 통신을 책임지지 않아야 함
+
+<br/>
 
 ### STEP 2. 애플리케이션 서비스 계층 도입
 - **험블 컨트롤러** _humble controller_(육각형 아키텍처 분류상 애플리케이션 서비스)로 책임 이동
@@ -217,52 +221,172 @@ Example.
 
 **Version 2.** Application service, version 1
 
+```java
+public class UserController {
+    private final Database database = new Database();       // ① 프로세스 외부 의존성(Database와 MessageBus)이 직접 인스턴스화
+    private final MessageBus messageBus = new MessageBus();
+
+    public void changeEmail(int userId, String newEmail) throws Exception {
+        Object[] data = database.getUserById(userId);
+        String email = (String)data[1];
+        UserType type = (UserType)data[2];
+        User user = new User(userId, email, type);            // ② 컨트롤러가 데이터베이스 데이터를 User 인스턴스화
+
+        Object[] companyData = database.getCompany();
+        String companyDomainName = (String) companyData[0];
+        int numberOfEmployees = (int) companyData[1];
+
+        int newNumberOfEmployees = user.changeEmail(newEmail, // ③ 회사 직원수는 특정 사용자와 관련이 없음
+                companyDomainName, numberOfEmployees);
+
+        // ④ 새로운 이메일이 전과 다른지 여부와 관계없이, 무조건 데이터를 수정해서 저장하고 메시지 버스에 알림을 보냄
+        database.saveCompany(newNumberOfEmployees);
+        database.saveUser(user);
+
+        messageBus.sendEmailChangedMessage(userId, newEmail);
+    }
+}
+
+```
+
 외부 의존성과의 작업을 줄임, 하지만 아래의 문제점이 발생
-- 프로세스 외부 의존성(Database와 MessageBus)이 주입되지 않고 직접 인스턴스화 됨 👉🏻 통합 테스트에서 문제가 될 것
-- 컨트롤러는 데이터베이스에서 받은 원시 데이터를 user 인스턴스로 재구성
-- 이 는 복잡한 로직이므로 애플리케이션 서비스에 속하면 안 된다. 애플리케이션 서비 스의 역할은 복잡도나 도메인 유의성의 로직이 아니라 오케스트레이션만 해당한다.
-- 회사 데이터도 마찬가지다. 이 데이터의 다른 문제는 다음과 같다. user는 이제 업데이트된 직원 수를 반환하는데, 이 부분이 이상해 보인다. 회사 직원 수는 특정 사 용자와 관련이 없다. 이 책임은 다른 곳에 있어야 한다.
-• 컨트롤리는 새로운 이메일이 전과 다른지 여부와 관계없이 무조건 데이터를 수정해
-서 저장하고 메시지 버스에 알림을 보낸다.
-user 클래스는 더 이상 프로세스 외부 의존성과 통신할 필요가 없으므로 테스트하기가 매우 쉬워졌다. 실제로 프로세스 외부든 내부든 어떤 협력자도 없다. userel Changeemail 메 서드의 새로운 버전을 보면 다음과 같다.
+
+<pre>
+① 프로세스 외부 의존성(Database와 MessageBus)이 직접 인스턴스화 👉🏻 통합 테스트에서 문제가 될 것
+② 컨트롤러가 데이터베이스 데이터를 User 인스턴스화
+③ 회사 직원수는 특정 사용자와 관련이 없음
+④ 컨트롤러는 새로운 이메일이 전과 다른지 여부와 관계없이, 무조건 데이터를 수정해서 저장하고 메시지 버스에 알림을 보낸다.
+</pre>
+
+user 클래스는 더 이상 프로세스 외부 의존성과 통신할 필요가 없으므로 테스트하기가 매우 쉬워졌다. 
+실제로 프로세스 외부든 내부든 어떤 협력자도 없다. userel Changeemail 메 서드의 새로운 버전을 보면 다음과 같다.
+
+<br/><br/><img src="./image/image08.png" width="60%" /><br/>
+
+- User: 도메인 모델 사분면으로 들어와서 수직 축에 가까이 있게 됨
+- UserController: 복잡한 로직이 있기 때문에 지나치게 복잡한 코드 사분면의 경계에 걸쳐 있음
+
+<br/>
+
+### STEP 3. 애플리케이션 서비스 복잡도 낮추기
+
+**Version 3. UserFactory - 유틸리티 코드의 예**
+
+* - 다소 복잡하지만 도메인 유의성이 없음
+* - 즉, 사용자 이메일을 변경 하려는 클라이언트의 목표와 직접적인 관련이 없음
 
 
+코드에서 사용하는 기본 라이브러리에는 숨은 분기점이 많을 수 있으므로 잘못될 가능성이 많음 
+
+👉🏻 UserFactory. Create() 메서드가 그 예시.
+
+<br/>
+
+### STEP 4. 새 Company 클래스
 
 
-<br/><br/>
+**Version 4.** The new Company class in the domain layer
 
-- **코드 복잡도**: 코드에서 의사 결정 지점 수에 따라 명시적으로(코드) 그리고 암시적으로(코드가 사용하는 라이브러리) 정의
-- **도메인 유의성**: 프로젝트의 문제 도메인에 대해 코드가 얼마나 중요한지를 줌
-  - 복잡한 코드는 종종 도메인 유의성이 높고 그 반대의 경우도 있음
-- **복잡한 코드**와 **도메인 유의성**을 갖는 코드는 해당 테스트의 회귀 방지가 뛰어나기 때문에 단위 테스트에서 가장 이로움
-- 협력자가 많은 코드를 다루는 단위 테스트는 유지비가 많이 들. 이러한 테스트는 협력자를 예상 상태로 만들고 나서 상태나 상호 작용을 확인하고자 공간을 많이 필요로 함.
-- 복잡도 또는 도메인 유의성과 협력자 수에 따른 네 가지 유형의 코드
-  - 도메인 모델 및 알고리즘(복잡도 또는 도메인 유의성이 높음, 협력자가 거의 없음)은 단 위 테스트에 대한 노력 대비 가장 이롭다.
-  - 간단한 코드(복잡도와 도메인 유의성이 낮음. 협력자가 거의 없음)는 테스트할 가치가 전혀 없다.
-  - 컨트롤러(복잡도와 도메인 유의성이 낮음. 협력자가 많음)는 통합 테스트를 통해 간단 히 테스트해야 한다.
-  - 지나치게 복잡한 코드(복잡도 또는 도메인 유의성이 높음. 협력자가 많음)는 컨트롤리 와 복잡한 코드로 분할해야 한다.
-- 코드가 중요하거나 복잡할수록 협력자가 적어야 한다.
-- **험블 객체 패턴**:
-  - 코드에서 비즈니스 로직을 별도의 클래스로 추출
-  - 나머지 코드는 비즈니스 로직을 둘러싼 얇은 험블 래퍼 (컨트롤러)
-  - 복잡한 코드를 테스트할 수 있는 데 도움이 됨
-- **육각형 아키텍처**와 **함수형 아키텍처**는 험블 객체 패턴을 구현
-- **육각형 아키텍처**: 비즈니스 로직과 프로세스 외부 의존성과의 통신을 분리
-- **함수형 아키텍처**: 프로세스 외부 의존성뿐만 아니라 모든 협력자와의 통신과 비즈니스 로직을 분리
-- 코드의 **깊이**와 **너비**의 관점에서 비즈니스 로직과 오케스트레이션 책임을 생각하라
-  - 코드는 깊을 수도 있고(복잡하거나 중요함), 넓을 수도 있지만(협력자가 많음), 둘 다는 아님.
-- 도메인 유의성이 있으면 전제 조건을 테스트하고, 그 외의 경우에는 테스트하지 않는다.
-- 비즈니스 로직과 오케스트레이션을 분리할 때는 다음과 같이 세 가지 중요한 특성 이 있다.
-  1. **도메인 모델 테스트 유의성**: 도메인 클래스 내 협력자 수와 유형에 대한 함수
-  2. **컨트롤러 단순성**: 컨트롤러에 의사 결정 지점이 있는지에 따라 다름
-  3. **성능**: 프로세스 외부 의존성에 대한 호출 수로 정의
-- 항상 세 가지 특성 중 최대 두 가지를 가질 수 있다.
-  1. **외부에 대한 모든 읽기와 쓰기를 비즈니스 연산 가장자리로 밀어내기** : 컨트롤러를 단순하게 유지하고 도메인 모델 데스트 유의성을 지키지만, 성능이 저하된다.
-  2. **도메인 모델에 프로세스 외부 의존성을 주입하기**: 성능을 유지하고 컨트롤러를 단순 하게 하지만, 도메인 모델의 테스트 유의성이 떨어진다.
-  3. **의사 결정 프로세스 단계를 더 세분화하기**: 성능과 도메인 모델 테스트 유의성을 지 키지만, 컨트롤러의 단순함을 포기한다.
-- 의사 결정 프로세스 단계를 더 세분화하는 것이 장단점을 고려할 때 가장 효과적인 절충이다. 다음 두 가지 패턴을 사용해 컨트롤러 복잡도 증가를 완화할 수 있다.
-  - CanExecute/Execute 패턴은 각 Do() 메서드에 대해 CanDo()를 두고, canDo()가 성공적으로 실행되는 것을 Do()의 전제 조건으로 한다. 이 패턴은 Do() 전에 canDo()를 호출하지 않을 수 없기 때문에 컨트롤러의 의사 결정을 근본적으로 제거한다.
-  - 도메인 이벤트는 도메인 모델의 중요한 변경 사항을 추적하고 해당 변경 사항을 프로세스 외부 의존성에 대한 호출로 변환한다. 이 패턴으로 컨트롤러에서 추적 에 대한 책임이 없어진다.
-- 추상화할 것을 테스트하기보다는 추상화를 테스트하는 것이 더 쉽다. 도메인 이벤트는 프로세스 외부 의존성 호출 위의 추상화에 해당한다. 도메인 클래스의 변경은 데이터 저장소의 향후 수정에 대한 추상화에 해당한다.
+<br/><br/><img src="./image/image09.png" width="60%" /><br/>
 
-<br/><br/>
+<br/>
+
+## 3. 최적의 단위 테스트 커버리지 분석
+
+<br/><br/><img src="./image/table01.png" width="80%" /><br/>
+
+### 3.1 도메인 계층과 유틸리티 코드 테스트하기
+
+- 좌측 상단 테스트 메서드
+  - 최상의 비용 편익
+  - 코드의 복잡도나 도메인 유의성이 높으면 회귀 방지가 뛰어나고 협력자가 거의 없어 유지비도 가장 낮음
+
+<br />
+
+**User 테스트**
+
+```java
+@Test
+void changing_email_from_non_corporate_to_corporate() {
+    Company company = new Company("mycorp.com", 1);
+    User sut = new User(1, "user@gmail.com", UserType.CUSTOMER);
+    sut.changeEmail("new@mycorp.com", company);
+
+    assertEquals(2, company.getNumberOfEmployees());
+    assertEquals("new@mycorp.com", sut.getEmail());
+    assertEquals(UserType.EMPLOYEE, sut.getType());
+}
+```
+
+전체 커버리지를 달성하려면, 다음과 같이 테스트 세 개가 더 필요
+
+```java
+public void changing_email_from_corporate_to_non_corporate() 
+public void changing_email_without_changing_user_type() 
+public void changing_email_to_the_same_one()
+```
+
+혹은, 아래와 같이 ParameterizedTest 로 실행 가능
+
+```java
+@ParameterizedTest
+@CsvSource({
+    "mycorp.com, email@mycorp.com, true",
+    "mycorp.com, email@gmail.com, false"
+})
+public void differentiatesCorporateEmailFromNonCorporate(String domain, String email, boolean expectedResult) {
+    Company sut = new Company(domain, 0);
+
+    boolean isEmailCorporate = sut.isEmailCorporate(email);
+
+    assertEquals(expectedResult, isEmailCorporate);
+}
+```
+
+<br/>
+
+### 3.2. 나머지 세 사분면에 대한 코드 테스트
+
+<br/><br/><img src="./image/table01-1.png" width="80%" /><br/>
+
+표의 좌측 하단에 ① 영역은 복잡하고 협력자가 거의 없는 코드
+- 단순해서 노력을 들일 필요가 없고, 테스트는 회귀 방지가 떨어지는 코드
+
+표의 우측 상단 ② 영역은 테스트할 것 없음
+- 복잡도가 높고 협력자가 많은 모든 코드를 리팩터링으로 제거했으므로
+
+
+<br/>
+
+### 3.3. 전제 조건을 테스트해야 하는가?
+
+<small>일반적으로 권장하는 지침</small>
+
+**도메인 유의성이 있는 모든 전제조건을 테스트하라**
+
+```java
+public void changeNumberOfEmployees(int delta) {
+    assert NumberOfEmployees + delta >= 0;
+    NumberOfEmployees += delta;
+}
+```
+
+- 특별한 종류의 분기점(전제조건)
+- 회사의 직원 수가 음수가 돼서는 안된다는 전제 조건
+
+
+<small>하지만, </small>
+
+**도메인 유의성이 없는 전제조건을 테스트하는데 시간을 들이지 말라**
+- 예를들어 UsenFactory의 Create 메서드
+
+```java
+public static User Create(Object[] data) {
+    assert data.length >= 3;
+    // ...
+}
+```
+
+이 전제 조건에 도메인 의미가 없으므로 테스트 하기에 별 가치가 없음
+
+<br/>
