@@ -1,4 +1,4 @@
-package com.gngsn.v1;
+package com.gngsn;
 
 public class Path {
     public static String combine(String directoryName, String file) {

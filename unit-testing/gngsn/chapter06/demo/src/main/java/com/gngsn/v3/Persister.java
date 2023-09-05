@@ -1,16 +1,12 @@
 package com.gngsn.v3;
 
 
-import com.gngsn.v1.File;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Dictionary;
-import java.util.List;
-import java.util.function.Predicate;
 
 public class Persister {
     public FileContent[] ReadDirectory(String directoryName) {
