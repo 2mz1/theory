@@ -76,6 +76,8 @@
 <pre>
 1 + &lt;number of branching points&gt;
 </pre>
+
+>>>>>>> b6826f7 (Add summing Chapter 07 until 7.2.3)
 - `if` 나 조건부 루프와 같은 <b>제어 흐름문이 없는 메서드</b>는 순환 복잡도가 <b>1 + 0 = 1</b>
 - 분기점 수는 관련된 가장 간단한 조건(predicate) 수로 계산
 
@@ -215,7 +217,6 @@ Example.
 ### 2.1 고객 관리 시스템 소개
 
 **고객 관리 시스템 CAM, CustomerManagement System**
-
 - 사용자 등록을 처리
 - 모든 사용자가 데이터 베이스에 저장
 
