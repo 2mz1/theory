@@ -1,4 +1,4 @@
-package com.gngsn.v1;
+package com.gngsn;
 
 import kotlin.Pair;
 
