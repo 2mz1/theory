@@ -253,5 +253,179 @@ public void changing_email_from_corporate_to_non_corporate()
 - 메시지 버스의 목적은 다른 시스템과의 통신을 가능하게 하는 것뿐
 - 통합 테스트는 메시지 버스를 목으로 대체하고 컨트롤러와 목 간의 상호작용을 검증
 
+<br/>
+
+### 3.3 엔드 투 엔드 테스트
+
+- 어떤 프로세스 외부 의존성도 목으로 대체하지 않는 것을 의미
+- 엔드 투 엔드 테스트의 사용 여부는 각자의 판단에 따름
+
+<br/>
+
+## 4. 의존성 추상화를 위한 인터페이스 사용
+
+### 4.1 인터페이스와 느슨한 결합
+
+**인터페이스를 사용하는 일반적인 이유:**
+- 프로세스 외부 의존성을 추상화해 느슨한 결합을 달성
+- 기존 코드를 변경하지 않고 새로운 기능을 추가해 공개 폐쇄 원칙 _OCP, Open-Closed Principle_ 을 지키기 때문
+
+**모두 오해였다**
+1. 단일 구현을 위한 인터페이스는 추상화가 아니며, 해당 인터페이스를 구현하는 구체 클래스보다 결합도가 낮지 않음
+   - 진정한 추상화는 발견하는 것이지, 발명하는 것이 아님
+2. **YAGNI** _You aren't gonna need it_: 현재 필요하지 않은 기능에 시간을 들이지 말아라
+   - 기회 비용: 당장 필요하지 않은 기능을 개발하는데 시간을 보내는 것은, 지금 당장 필요한 기능을 제치고 시간을 허비하는 것
+   - 적은 코드: 불필요한 코드 베이스를 줄이자
+
+**FYI.** [OCP vs YANGI](https://enterprisecraftsmanship.com/posts/ocp-vs-yagni)
+
+<br/>
+
+### 4.2 프로세스 외부 의존성에 인터페이스를 사용하는 이유
+
+- 프로세스 외부 의존성에 인터페이스를 사용하는 이유: 목 사용
+  - 의존성을 목으로 처리할 필요가 없는 한, 프로세스 외부 의존성에 대한 인터페이스를 두지 말자
+  - 결국 비관리 의존성에 대해서만 인터페이스를 사용
+  - 관리 의존성을 컨트롤러에 명시적으로 주입하고, 해당 의존성을 구체 클래스로 사용하라.
+
+```java
+public class UserController {
+    private final Database database;         // 데이터베이스: 관리 의존성 → 구체 클래스
+    private final IMessageBus messageBus;    // 메시지 버스: 비관리 의존성 → 인터페이스
+
+    public UserController(Database database, IMessageBus messageBus) {
+        this.database = database;
+        this.messageBus = messageBus;
+    }
+
+    public String changeEmail(int userId, String newEmail) {
+        /* the method uses _database and _messageBus */
+    }
+}
+```
+
+<br/>
+
+## 5. 통합 테스트 모범 사례
+
+통합 테스트를 최대한 활용하는데 도움이 되는 몇 가지 일반적인 지침
+- 도메인 모델 경계 명시
+- 애플리케이션 내 계층 줄이기
+- 순환 의존성 제거
+
+<br/>
+
+## 5.1 도메인 모델 경계 명시
+
+- 항상 도메인 모델을 코드베이스에서 명시적이고 잘 알려진 위치에 두도록 하라
+- 도메인 모델은 프로젝트가 해결하고자 하는 문제에 대한 도메인 지식의 모음
+
+<br/>
+
+## 5.2 계층 수 줄이기
+
+> 컴퓨터 과학의 모든 문제는 또 다른 간접 계층으로 해결할 수 있다.
+> 간접 계층이 너무 많아서 문제가 생기지 않는다면 말이다.
+> - 데이빗휠러(DavidJ. Wheeler)
+
+**간접 계층 단점**
+- 코드 추론에 부정적인 영향을 미침
+    - 모든 조각을 하나의 그림으로 만드는데 상당한 노력이 필요
+- 단위 테스트와 통합 테스트에도 도움이 되지 않음
+    - 간접 계층이 많은 코드베이스는 컨트롤러와 도메인 모델 사이에 명확한 경계가 없는 편
+
+<br/>
+<table>
+<tr>
+<th>다중 계층 (보통의 엔터프라이즈급 앱)</th>
+<th>간접 계층을 최소화한 계층</th>
+</tr>
+<tr>
+<td><img src="./image/image09.png" width="100%" /></td>
+<td><img src="./image/image10.png" width="100%" /></td>
+</tr>
+</table>
+<br/>
+
+### 5.3 순환 의존성 제거
+
+순환 의존성 제거: 유지 보수성을 대폭 개선, 테스트를 더 쉽게할 수 있는 방법 중 하나
+
+<pre><b>순환 의존성</b> <i>circular dependency 또는cyclic dependency</i>
+: 둘 이상의 클래스가 제대로 작동하고자 직·간접적으로 서로 의존하는 것
+</pre>
+
+**순환 의존성 단점**
+- 출발점이 명확하지 않음: 코드를 읽고 이해하려고 할 때 알아야 할 것이 많아 부담이 됨
+- 테스트 방해: 
+  - 클래스 그래프를 동작 단위로 나누기 위해서 인터페이스에 의존해 Mock으로 처리해야 하는 경우가 많음
+  - 특히 도메인 모델을 테스트할 때 지양해야 함
+
+<br/>
+<table>
+<tr>
+<th>Before</th>
+<th>After</th>
+</tr>
+<tr>
+<td>
+
+<pre>
+public class CheckOutService {
+    public void checkOut(int orderId) {
+        var service = new ReportGenerationService();
+        service.GenerateReport(orderId, this);
+
+        /* other code */
+    }
+}
+
+public class ReportGenerationService {
+    public void GenerateReport(
+        int orderId,
+        <b>CheckOutService checkOutService</b>) {
+    }
+}
+</pre>
+
+</td>
+<td>
+
+<pre>
+public class CheckOutService {
+    public void checkOut(int orderId) {
+        var service = new ReportGenerationService();
+        <b>Report report</b> = service.GenerateReport(orderId);
+
+        /* other work */
+    }
+}
+
+public class ReportGenerationService {
+    public <b>Report</b> GenerateReport(int orderId) {
+        /* ... */
+    }
+}
+</pre>
+
+순환 의존성 제거
+
+</td>
+</tr>
+</table>
+<br/>
+
+<br/>
+
+### 5.4 테스트에서 다중 실행 구절 사용
+
+테스트에서 두 개 이상의 준비나 실행 또는 검증 구절을 두는 것
+
+👉🏻 **코드 악취 _code smell_**
+
+두 개 이상일 때 → 각 실행을 고유의 테스트로 추출해 테스트를 나누는 것이 좋음
+
+
+
 <br/><br/>
 
