@@ -1,6 +1,9 @@
 package com.gngsn.crm.v1;
 
+import com.gngsn.ch08.crm.v1.*;
+import com.gngsn.ch08.crm.v1.UserController;
 import org.junit.jupiter.api.Test;
+import com.gngsn.ch08.crm.v1.Database;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;

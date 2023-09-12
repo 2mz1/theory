@@ -1,9 +1,9 @@
-package com.gngsn.crm.v1;
+package com.gngsn.ch08.crm.v1;
 
 /**
  * chapter08 - v1
  */
-class Database {
+public class Database {
     private static Object[] company;
     private static Object[] user;
 

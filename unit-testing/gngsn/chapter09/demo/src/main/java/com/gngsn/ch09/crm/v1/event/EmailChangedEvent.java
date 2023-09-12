@@ -1,6 +1,6 @@
-package com.gngsn.crm.v1;
+package com.gngsn.ch09.crm.v1.event;
 
-public class EmailChangedEvent {
+public class EmailChangedEvent implements IDomainEvent {
     private int userId;
     private String newEmail;
 
@@ -9,6 +9,6 @@ public class EmailChangedEvent {
     }
 
     public String getNewEmail() {
-        return getNewEmail;
+        return newEmail;
     }
 }

@@ -1,9 +1,9 @@
-package com.gngsn.crm.v1;
+package com.gngsn.ch09.crm.v1.company;
 
 import java.util.Objects;
 
 /**
- * chapter08 - v1
+ * chapter09 - v1
  */
 public class Company {
     public String DomainName;

@@ -1,9 +1,9 @@
-package com.gngsn.crm.v1;
+package com.gngsn.ch08.crm.v1;
 
 /**
  * chapter08 - v1
  */
-enum UserType {
+public enum UserType {
     CUSTOMER,
     EMPLOYEE;
 }
