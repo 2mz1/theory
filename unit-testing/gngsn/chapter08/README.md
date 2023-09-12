@@ -425,7 +425,125 @@ public class ReportGenerationService {
 
 두 개 이상일 때 → 각 실행을 고유의 테스트로 추출해 테스트를 나누는 것이 좋음
 
+<br/>
 
+## 6. 로깅 기능을 테스트하는 방법
+
+로깅logging은 회색 지대로, 테스트에 관해서는 어떻게 해야 할지 분명 하지 않음
+
+<br/>
+
+## 6.1 로깅을 테스트해야 하는가?
+
+로깅은 횡단 기능 cross0cutting functionality 으로, 코드베이스 어느 부분에서나 필요로 할 수 있음
+
+
+**User 클래스의 로깅 예제**
+
+```java
+public class User {
+    public void changeEmail(string newEmail, Company company) {
+        logger.info("Changing email for user %s to %s".formatted(userId, newEmail));
+
+        assert CanChangeEmail() == null;
+
+        if (Email == newEmail)
+            return;
+
+        UserType newType = company.isEmailCorporate(newEmail)
+            ? UserType.Employee
+            : UserType.Customer;
+
+        if (Type != newType) {
+            int delta = newType == UserType.Employee ? 1 : -1;
+            company.changeNumberOfEmployees(delta);
+            // 사용자 유형 변경
+            logger.info("User %s changed type from %s to %s".formatted(UserId, Type, newType));
+        }
+
+        Email = newEmail;
+        Type = newType;
+        EmailChangedEvents.Add(new EmailChangedEvent(UserId, newEmail));
+
+        // 메서드 끝
+        logger.Info("Email is changed for user %s".formatted(UserId));
+    }
+}
+```
+
+- User 클래스는 changeEmail 메서드의 시작과 끝에서, 그리고 사용자 유형이 변경될 때 마다 로그 파일에 기록
+- 로깅이 애플리케이션의 식별할 수 있는 동작인가, 아니면 구현 세부 사항
+
+<br/>
+
+**로깅을 하지 말아야할 때**
+- 로깅은 텍스트 파일이나 데이터베이스와 같은 프로세스 외부 의존성이기 때문에 부작용 초래
+  - 구현 세부사항이므로 테스트해서는 안됨
+**로깅을 해야할 때**
+- 로그가 식별할 수 있는 동작으로써, 가장 중요한(그리고 유일한) 부분
+  - 로깅 라이브러리 작성
+  - 비즈니스 담당자의 주요 애플리케이션 작업 흐름 기록 요구 사항
+
+<br/>
+
+**로깅 유형**
+
+- 지원 로깅 *support logging*: 지원 담당자나 시스템 관리자가 추적할 수 있는 메시지를 생성 
+- 진단 로깅 *diagnostic logging*: 개발자가 애플리케이션 내부 상황을 파악할 수 있도록 도움
+
+<small>⌜Growing Object-Oriented(Addison-Wesley Professional⌟, 스티브 프리먼과 냇 프라이스 _Steve Freeman & Nat Pryce_</small>
+
+
+<br/>
+
+## 6.2 로깅을 어떻게 테스트해야 하는가?
+
+- 로그 저장소간의 상호작용을 검증하려면 Mock을 사용해야 함
+
+**✔️ILogger 위에 wrapper 도입**
+
+- ILogger 인터페이스를 Mock으로 처리하지 말아라
+- 비즈니스에 필요한 모든 지원 로깅을 명시적으로 나열하는 특별한 DomainLogger 클래스를 만들고 ILogger 대신 해당 클래스와의 상호작용을 확인하라.
+
+```java
+public void ChangeEmail(string newEmail, Company company) {
+    _logger.Info("Changing email for user {UserId} to {newEmail}");
+
+    Precondition.Requires(CanChangeEmail() == null);
+
+    if (Email == newEmail)
+        return;
+
+    UserType newType = company.IsEmailCorporate(newEmail)
+        ? UserType.Employee
+        : UserType.Customer;
+
+    if (Type != newType) {
+        int delta = newType == UserType.Employee ? 1 : -1;
+        company.ChangeNumberOfEmployees(delta);
+        _domainLogger.UserTypeHasChanged(UserId, Type, newType);
+    }
+
+    Email = newEmail;
+    Type = newType;
+    EmailChangedEvents.Add(new EmailChangedEvent(UserId, newEmail));
+
+    _logger.Info("Email is changed for user {UserId}");
+}
+```
+```java
+public class DomainLogger : IDomainLogger {
+    private readonly ILogger _logger;
+
+    public DomainLogger(ILogger logger) {
+        _logger = logger;
+    }
+
+    public void UserTypeHasChanged(int userId, UserType oldType, UserType newType) {
+        _logger.Info("User {userId} changed type from {oldType} to {newType}");
+    }
+}
+```
 
 <br/><br/>
 
