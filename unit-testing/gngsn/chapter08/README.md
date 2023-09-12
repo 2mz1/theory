@@ -10,11 +10,11 @@
 
 ## 1. 통합 테스트는 무엇인가?
 
-
 통합 테스트
 : 단위 테스트 세가지 요구 사항 중 하나라도 충족하지 못하는 테스트
 
 단위 테스트는 다음 세 가지 요구 사항을 충족하는 테스트
+
 - 단일 동작 단위를 검증
 - 빠르게 수행
 - 다른 테스트와 별도로 처리
@@ -44,10 +44,12 @@
 - 단위 테스트와 통합 테스트 간의 균형을 유지하는 것이 중요
 
 통합 테스트 **단점 - 유지비**
+
 - 프로세스 외부 의존성 운영이 필요함
 - 관련된 협력자가 많아서 테스트가 비대해짐
 
 통합 테스트 **장점**
+
 - 코드를 더 많이 거치며 회귀 방지가 단위 테스트보다 우수
 - 제품 코드와의 결합도가 낮아 리팩터링 내성 우수
 
@@ -104,7 +106,7 @@ public String changeEmail(int userId, String newEmail) {
 }
 ```
 
-단위 테스트로 User의 Pre-condition을 체크하는 것을 지향하고, 
+단위 테스트로 User의 Pre-condition을 체크하는 것을 지향하고,
 통합테스트, 즉 컨트롤러에서 CanChangeEmail()을 호출하는 것을 지양하라.
 
 <br/>
@@ -124,7 +126,6 @@ public String changeEmail(int userId, String newEmail) {
 <br/>
 
 ### 2.1 두 가지 유형의 외부 의존성
-
 
 <br/><img src="./image/image04.png" width="80%" /><br/>
 
@@ -193,14 +194,15 @@ public String changeEmail(int userId, String newEmail) {
     - 따라서 그 팀은 단지 다른 시스템과 쉽게 통합할 수 있도록 일부 테이블만 접근 권한을 공유하기로 결정
     - 데이터베이스는 관리 의존성이면서 비관리 의존성
 
-
 -> 관리 포인트가 많아지는 것보다, API(동기식 통신) 나 메시지 버스(비동기식 통신) 를 사용하는 것이 더 나음
+
 - 다른 애플리케이션에서 볼 수 있는 테이블을 비관리 의존성으로 취급하라
     - 이러한 테이블은 사실상 메시지 버스 역할을 하고, 각 행이 메시지 역할
 
 <br/><img src="./image/image05.png" width="80%" /><br/>
 
 **꼭 필요한 경우가 아니라면 시스템이 해당 테이블과 상호 작용하는 방식을 변경하지 말라!**
+
 - 다른 애플리케이션이 이러한 변경에 어떻게 반응하는지 알 수 없음
 
 <br/>
@@ -225,9 +227,12 @@ public String changeEmail(int userId, String newEmail) {
 통합테스트에 대한 일반적인 지침은 가장 긴 주요 흐름과 단위 테스트로는 수행 할 수 없는 모든 예외 상황을 다루는 것
 
 **CRM 프로젝트** → 가장 긴 주요 흐름은 기업 이메일에서 일반 이메일로 변경하는 것
-  1. 데이터베이스에서 사용자 & 회사 모두 업데이트 됨
+
+1. 데이터베이스에서 사용자 & 회사 모두 업데이트 됨
+
     - 유저는 자신의 이메일, 그리고 타입을 '기업 → 일반'으로 변경
-  2. 메시지 버스 사용
+
+2. 메시지 버스 사용
 
 단위 테스트로 테스트 하지 않는 한 가지 예외 상황이 있는데, 바로 이메일을 변경할 수 없는 시나리오
 
@@ -250,6 +255,7 @@ public void changing_email_from_corporate_to_non_corporate()
 <br/>
 
 **#2. 메시지 버스**
+
 - 메시지 버스의 목적은 다른 시스템과의 통신을 가능하게 하는 것뿐
 - 통합 테스트는 메시지 버스를 목으로 대체하고 컨트롤러와 목 간의 상호작용을 검증
 
@@ -267,15 +273,17 @@ public void changing_email_from_corporate_to_non_corporate()
 ### 4.1 인터페이스와 느슨한 결합
 
 **인터페이스를 사용하는 일반적인 이유:**
+
 - 프로세스 외부 의존성을 추상화해 느슨한 결합을 달성
 - 기존 코드를 변경하지 않고 새로운 기능을 추가해 공개 폐쇄 원칙 _OCP, Open-Closed Principle_ 을 지키기 때문
 
 **모두 오해였다**
+
 1. 단일 구현을 위한 인터페이스는 추상화가 아니며, 해당 인터페이스를 구현하는 구체 클래스보다 결합도가 낮지 않음
-   - 진정한 추상화는 발견하는 것이지, 발명하는 것이 아님
+    - 진정한 추상화는 발견하는 것이지, 발명하는 것이 아님
 2. **YAGNI** _You aren't gonna need it_: 현재 필요하지 않은 기능에 시간을 들이지 말아라
-   - 기회 비용: 당장 필요하지 않은 기능을 개발하는데 시간을 보내는 것은, 지금 당장 필요한 기능을 제치고 시간을 허비하는 것
-   - 적은 코드: 불필요한 코드 베이스를 줄이자
+    - 기회 비용: 당장 필요하지 않은 기능을 개발하는데 시간을 보내는 것은, 지금 당장 필요한 기능을 제치고 시간을 허비하는 것
+    - 적은 코드: 불필요한 코드 베이스를 줄이자
 
 **FYI.** [OCP vs YANGI](https://enterprisecraftsmanship.com/posts/ocp-vs-yagni)
 
@@ -284,9 +292,9 @@ public void changing_email_from_corporate_to_non_corporate()
 ### 4.2 프로세스 외부 의존성에 인터페이스를 사용하는 이유
 
 - 프로세스 외부 의존성에 인터페이스를 사용하는 이유: 목 사용
-  - 의존성을 목으로 처리할 필요가 없는 한, 프로세스 외부 의존성에 대한 인터페이스를 두지 말자
-  - 결국 비관리 의존성에 대해서만 인터페이스를 사용
-  - 관리 의존성을 컨트롤러에 명시적으로 주입하고, 해당 의존성을 구체 클래스로 사용하라.
+    - 의존성을 목으로 처리할 필요가 없는 한, 프로세스 외부 의존성에 대한 인터페이스를 두지 말자
+    - 결국 비관리 의존성에 대해서만 인터페이스를 사용
+    - 관리 의존성을 컨트롤러에 명시적으로 주입하고, 해당 의존성을 구체 클래스로 사용하라.
 
 ```java
 public class UserController {
@@ -309,6 +317,7 @@ public class UserController {
 ## 5. 통합 테스트 모범 사례
 
 통합 테스트를 최대한 활용하는데 도움이 되는 몇 가지 일반적인 지침
+
 - 도메인 모델 경계 명시
 - 애플리케이션 내 계층 줄이기
 - 순환 의존성 제거
@@ -326,9 +335,11 @@ public class UserController {
 
 > 컴퓨터 과학의 모든 문제는 또 다른 간접 계층으로 해결할 수 있다.
 > 간접 계층이 너무 많아서 문제가 생기지 않는다면 말이다.
+>
 > - 데이빗휠러(DavidJ. Wheeler)
 
 **간접 계층 단점**
+
 - 코드 추론에 부정적인 영향을 미침
     - 모든 조각을 하나의 그림으로 만드는데 상당한 노력이 필요
 - 단위 테스트와 통합 테스트에도 도움이 되지 않음
@@ -356,10 +367,11 @@ public class UserController {
 </pre>
 
 **순환 의존성 단점**
+
 - 출발점이 명확하지 않음: 코드를 읽고 이해하려고 할 때 알아야 할 것이 많아 부담이 됨
-- 테스트 방해: 
-  - 클래스 그래프를 동작 단위로 나누기 위해서 인터페이스에 의존해 Mock으로 처리해야 하는 경우가 많음
-  - 특히 도메인 모델을 테스트할 때 지양해야 함
+- 테스트 방해:
+    - 클래스 그래프를 동작 단위로 나누기 위해서 인터페이스에 의존해 Mock으로 처리해야 하는 경우가 많음
+    - 특히 도메인 모델을 테스트할 때 지양해야 함
 
 <br/>
 <table>
@@ -437,7 +449,6 @@ public class ReportGenerationService {
 
 로깅은 횡단 기능 cross0cutting functionality 으로, 코드베이스 어느 부분에서나 필요로 할 수 있음
 
-
 **User 클래스의 로깅 예제**
 
 ```java
@@ -477,22 +488,22 @@ public class User {
 <br/>
 
 **로깅을 하지 말아야할 때**
+
 - 로깅은 텍스트 파일이나 데이터베이스와 같은 프로세스 외부 의존성이기 때문에 부작용 초래
-  - 구현 세부사항이므로 테스트해서는 안됨
-**로깅을 해야할 때**
+    - 구현 세부사항이므로 테스트해서는 안됨
+      **로깅을 해야할 때**
 - 로그가 식별할 수 있는 동작으로써, 가장 중요한(그리고 유일한) 부분
-  - 로깅 라이브러리 작성
-  - 비즈니스 담당자의 주요 애플리케이션 작업 흐름 기록 요구 사항
+    - 로깅 라이브러리 작성
+    - 비즈니스 담당자의 주요 애플리케이션 작업 흐름 기록 요구 사항
 
 <br/>
 
 **로깅 유형**
 
-- 지원 로깅 *support logging*: 지원 담당자나 시스템 관리자가 추적할 수 있는 메시지를 생성 
-- 진단 로깅 *diagnostic logging*: 개발자가 애플리케이션 내부 상황을 파악할 수 있도록 도움
+- 지원 로깅 _support logging_: 지원 담당자나 시스템 관리자가 추적할 수 있는 메시지를 생성
+- 진단 로깅 _diagnostic logging_: 개발자가 애플리케이션 내부 상황을 파악할 수 있도록 도움
 
 <small>⌜Growing Object-Oriented(Addison-Wesley Professional⌟, 스티브 프리먼과 냇 프라이스 _Steve Freeman & Nat Pryce_</small>
-
 
 <br/>
 
@@ -500,16 +511,16 @@ public class User {
 
 - 로그 저장소간의 상호작용을 검증하려면 Mock을 사용해야 함
 
-**✔️ILogger 위에 wrapper 도입**
+**✔️ #1. ILogger 위에 wrapper 도입**
 
 - ILogger 인터페이스를 Mock으로 처리하지 말아라
 - 비즈니스에 필요한 모든 지원 로깅을 명시적으로 나열하는 특별한 DomainLogger 클래스를 만들고 ILogger 대신 해당 클래스와의 상호작용을 확인하라.
 
 ```java
-public void ChangeEmail(string newEmail, Company company) {
-    _logger.Info("Changing email for user {UserId} to {newEmail}");
+public void ChangeEmail(String newEmail, Company company) {
+    logger.info("Changing email for user {UserId} to {newEmail}");
 
-    Precondition.Requires(CanChangeEmail() == null);
+    assert canChangeEmail() == null;
 
     if (Email == newEmail)
         return;
@@ -520,30 +531,204 @@ public void ChangeEmail(string newEmail, Company company) {
 
     if (Type != newType) {
         int delta = newType == UserType.Employee ? 1 : -1;
-        company.ChangeNumberOfEmployees(delta);
-        _domainLogger.UserTypeHasChanged(UserId, Type, newType);
+        company.changeNumberOfEmployees(delta);
+        domainLogger.userTypeHasChanged(UserId, Type, newType);
     }
 
     Email = newEmail;
     Type = newType;
-    EmailChangedEvents.Add(new EmailChangedEvent(UserId, newEmail));
+    EmailChangedEvents.add(new EmailChangedEvent(UserId, newEmail));
 
-    _logger.Info("Email is changed for user {UserId}");
+    logger.info("Email is changed for user {UserId}");
 }
 ```
+
+<br/>
+
+**IDomainLogger의 구현**
+
 ```java
-public class DomainLogger : IDomainLogger {
-    private readonly ILogger _logger;
+public class DomainLogger implements IDomainLogger {
+    private final ILogger logger;
 
     public DomainLogger(ILogger logger) {
-        _logger = logger;
+        this.logger = logger;
     }
 
-    public void UserTypeHasChanged(int userId, UserType oldType, UserType newType) {
-        _logger.Info("User {userId} changed type from {oldType} to {newType}");
+    public void userTypeHasChanged(int userId, UserType oldType, UserType newType) {
+        logger.info("User {userId} changed type from {oldType} to {newType}");
     }
 }
 ```
 
-<br/><br/>
+**✔️ #2. 구조화된 로깅 이해**
 
+**구조화된 로깅** _structured logging_
+
+- 로그 데이터 캡처와 렌더링을 분리하는 로깅 기술
+
+<br/><img src="./image/image12.png" width="80%" /><br/>
+
+<table>
+<tr>
+    <th>Before</th>
+    <th>After (구조화된 로깅)</th>
+</tr>
+<tr>
+    <td><pre>
+logger.Info("User Id is " + 12);
+    </pre></td>
+    <td><pre>
+logger.Info("User Id is {UserId}", 12);
+    </pre></td>
+</tr>
+</table>
+
+<br/>
+
+```csharp
+public void UserTypeHasChanged(
+    int userId, UserType oldType, UserType newType)
+{
+    _logger.Info(
+        $"User {userId} changed type " +
+        $"from {oldType} to {newType}");
+}
+```
+
+- `UserTypeHasChanged()` 메소드를 메시지 템플릿의 해시로 볼 수 있음
+    - 해당 해시에 userId, oldType, newType 매개변수를 덧붙여 로그 데이터를 만듦
+
+<br/>
+
+**✔️ #3. 지원 로깅과 진단 로깅을 위한 테스트 작성**
+
+'_IDomainLogger의 구현_'에서 확인했던 `DomainLogger` 는 '로그 저장소'라는 '외부 의존성'이 있음
+
+- User가 해당 의존성과 상호 작용하기 때문에, 비즈니스 로직과 프로새스 외부 의존성과의 통신 간에 분리해야 하는 원칙을 위반
+- 도메인 이벤트 방식을 사용해서 해결 가능
+
+**DomainLogger → Domain Event 변경**
+
+<pre lang="csharp"><code>public void ChangeEmail(string newEmail, Company company) {
+    _logger.Info($"Changing email for user {UserId} to {newEmail}");
+
+    Precondition.Requires(CanChangeEmail() == null);
+
+    if (Email == newEmail)
+        return;
+
+    UserType newType = company.IsEmailCorporate(newEmail)
+        ? UserType.Employee
+        : UserType.Customer;
+
+    if (Type != newType)
+    {
+        int delta = newType == UserType.Employee ? 1 : -1;
+        company.ChangeNumberOfEmployees(delta);
+        <b>AddDomainEvent(new UserTypeChangedEvent(UserId, Type, newType));</b>
+    }
+
+    Email = newEmail;
+    Type = newType;
+    AddDomainEvent(new EmailChangedEvent(UserId, newEmail));
+
+    _logger.Info($"Email is changed for user {UserId}");
+}</code></pre>
+
+<pre lang="csharp"><code>public string ChangeEmail(int userId, string newEmail) {
+    object[] userData = _database.GetUserById(userId);
+    User user = UserFactory.Create(userData);
+
+    string error = user.CanChangeEmail();
+    if (error != null)
+        return error;
+
+    object[] companyData = _database.GetCompany();
+    Company company = CompanyFactory.Create(companyData);
+
+    user.ChangeEmail(newEmail, company);
+
+    _database.SaveCompany(company);
+    _database.SaveUser(user);
+    <b>_eventDispatcher.Dispatch(user.DomainEvents);</b>  // 사용자 도메인 이벤트 전달
+
+    return "OK";
+}</code></pre>
+<br/>
+
+`EventDispatcher`는 도메인 이벤트를 프로세스 외부 의존성에 대한 호출로 변환하는 새로운 클래스
+
+- `EmailChangedEvent` 는 `messageBus.SendEmailChangedMessage()` 로 변환
+- `UserTypeChangedEvent` 는 `domainLogger.UserTypeHasChanged()` 로 변환
+
+    - 두 가지 책임 분리: 프로세스 외부 의존성 통신 & 도메인 로직
+
+- **단위 테스트**: 데스트 대상 User에서 UserTypeChangedEvent 인스턴스를 확인해야 함
+- **단일 통합 테스트**: Mock을 써서 DomainLogger와의 상호 작용이 올바른지 확인해야 함
+
+<br/>
+
+### 6.3 로깅이 얼마나 많아야 충분한가?
+
+- 지원 로깅 → 비즈니스 요구사항
+- 진단 로깅은 과도하게 사용하지 마라
+  - 코드를 혼란스럽게 만듦
+  - 로그의 잡음 → 로그가 많을 수록 정보를 찾기 어려워짐
+
+도메인 모델에는 진단 로깅을 절대 사용하지 않도록 하라
+
+<br/>
+
+### 6.4 로거 인스턴스를 어떻게 전달하는가?
+
+**정적 메서드 사용**
+
+```csharp
+public class User {
+    // 정적 메서드를 통해 ILogger를 처리하고 비공개 정적 필드에 저장
+    private static readonly ILogger _logger = LogManager.GetLogger(typeof(User));
+
+    public void ChangeEmail(string newEmail, Company company) {
+        _logger.Info($"Changing email for user {UserId} to {newEmail}");
+
+        /* ... */
+
+        _logger.Info($"Email is changed for user {UserId}");
+    }
+}
+```
+
+👉🏻 Ambient context: 위와 같은 의존성 획득 방식, 정적 접근자를 통해 특정 타입의 의존성 하나만 참조하게 됨
+⌜Dependency Injection Principles, Practices, Patterns (Manning Publications, 2018)⌟, Steven van Deursen, Mark Seeman 
+
+<br/>
+
+**Ambient context 단점**
+
+- 의존성이 숨어있고 변경하기 어려움
+- 테스트가 어려워짐
+
+<br/>
+
+**클래스 생성자를 통한 로거 주입**
+
+```csharp
+public void ChangeEmail(String newEmail, Company company, ILogger logger) {
+    logger.Info($"Changing email for user {UserId} to {newEmail}");
+
+    /* ... */
+
+    logger.Info($"Email is changed for user {UserId}");
+}
+```
+
+<br/>
+
+## 7. 결론
+
+- 식별할 수 있는 동작인지, 아니면 구현 세부사항인지 여부에 대한 관점으로 프로세스 외부 의존성과의 통신을 살펴보자
+- 로그 저장소도 동일하게 적용하라
+
+
+<br/><br/>
