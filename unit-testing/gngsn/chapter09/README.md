@@ -1,6 +1,19 @@
-# CHAPTER 9. 목 처리에 대한 모범 사례
+# CHAPTER 09. 목 처리에 대한 모범 사례
 
 **TL;DR**
+- 시스템 끝에서 비관리 의존성과의 상호작용을 검증하라
+  - **회귀 방지** 향상: 통합테스트로 검증된 코드가 더 많기 때문
+  - **리팩터링 내성** 향상: 코드의 구현 세부 사항에서 목을 분리하기 때문
+- **Spy**: Mock과 같은 목적으로 수동 작성하는 테스트 대역
+  - vs Mock: Mock은 Mock 프레임워크의 도움을 받아 생성
+  - 검증 단계에서 코드 재사용으로 테스트 사이즈가 줄고 가독성이 개선됨
+- assertion 작성 시, 제품 코드에 의존하지 말고, 테스트에서 별도의 리터럴과 상수 집합을 사용하라
+- **목을 처리 모범 사례**
+  - 비관리 의존성에만 Mock 적용하기
+  - 시스템 끝에 있는 의존성에 대해 상호 작용 검증
+  - 통합 테스트에서만 목을 사용, 단위 테스트에서는 금지
+  - 항상 Mock 호출 수 확인
+  - 직접 제작한 타입으로 Mock 처리
 
 <br/><br/>
 
@@ -75,9 +88,8 @@ messageBusMock.Verify(
 
 ### 1.2 Mock을 Spy로 대체하기 
 
-- **Spy**: Mock과 같은 목적을 수행하는 테스트 대역
-  - 수동으로 작성하는 반면에 Mock은 Mock 프레임워크의 도움을 받아 생성한다는 것이 유일한 차이점
-  - 실제로 Spy는 종종 직접 작성한 Mock
+- **Spy**: Mock과 같은 목적으로 수동 작성하는 테스트 대역
+    - vs Mock: Mock은 Mock 프레임워크의 도움을 받아 생성
 
 Example. IBus 위에서 작동하는 Spy
 
@@ -172,13 +184,13 @@ loggerMock.Verify(
 ## 2. 목을 처리의 두 가지 주요 모범 사례
 
 **실펴본 것**
-- 비관리 의존성에만 목 적용하기
+- 비관리 의존성에만 Mock 적용하기
 - 시스템 끝에 있는 의존성에 대해 상호 작용 검증
 
 **살펴볼 것**
-- 통합 테스트에서만 목을 사용하고 단위 테스트에서는 하지 않기
-- 항상 목 호출 수 확인하기
-- 보유 타임만 목으로 처리하기
+- 통합 테스트에서만 목을 사용, 단위 테스트에서는 금지
+- 항상 Mock 호출 수 확인
+- 직접 제작한 타입으로 Mock 처리
 
 <br/>
 
@@ -263,31 +275,30 @@ busSpy
 
 <br/>
 
-### 2.4 보유 타입만 목으로 처리하기
+### 2.4 직접 제작한 타입으로 Mock 처리
 
-- 보유 타입만 목으로 처리
-- 스티브 프리먼과 냇 프라이스가 처음 소개
+- 직접 생성한 타입만을 목으로 처리
+- 서드파티 라이브러리 위에 항상 어댑터 _adapter_ 작성 
+- → 서드 파트를 그대로 사용할 수 있도록 해당 어댑터를 Mock으로 처리해야 함
 
-서드파티 라이브러리 위에 항상 어댑터 _adapter_ 작성
-
-→ 서드 파트를 그대로 사용할 수 있도혹 해당 어댑터를 Mock으로 처리해야 함
+**이유** <small>⌜Growing Object-Oriented Software, Guided by Tests⌟ 에 소개</small>
 
 > - 서드파티 코드의 작동 방식에 대해 깊이 이해하지 못하는 경우가 많음
 > - 외부 코드가 내장 인터페이스를 가진다고 해도 그 인터페이스를 Mocking 한다고 하면, 그 동작이 정말로 실제와 동일한 동작을 하는지 확실하지 않기 때문에 위험 부담이 있음 
 > - 서드파티 코드 세부 사항까지 꼭 알 필요는 없으므로, 애플리케이션은 어댑터를 추상화 해서 라이브러리와의 관계를 정의
 > 
-> p. 69 ⌜Growing Object-Oriented Software, Guided by Tests⌟, Steve Freeman & Nat Pryce (Addison-Wesley Professional, 2009).
+> _Steve Freeman & Nat Pryce (Addison-Wesley Professional, 2009)_
 
 
 👉🏻 실제 어댑터는 코드와 외부 환경 사이의 손상 방지 계층 *anti-corruption leyer*으로 작동
 
-**어댑터의 역할**
+**어댑터의 역할** <small>⌜Domain-Driven Design: Tackling Complexity in the Heart of Software⌟</small>
 
 > - 기본 라이브러리의 복잡성 추상화
 > - 라이브러리의 필요한 기능만 노출
 > - 프로젝트 도메인 언어를 사용해 수행할 수 있음
 > 
-> ⌜Domain-Driven Design: Tackling Complexity in the Heart of Software⌟, Eric Evans (Addison-Wesley, 2003).
+> _Eric Evans (Addison-Wesley, 2003)_
 
 
 - 샘플 CRM 프로젝트의 **IBus** Interface 에 해당
