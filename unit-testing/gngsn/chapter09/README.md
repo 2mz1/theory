@@ -166,3 +166,135 @@ loggerMock.Verify(
 - 메시지 버스를 사용하면 외부 시스템이 이러한 변경에 어떻게 반응하는 지 알 수 없으므로 메시지 구조를 변경하지 않는 것이 중요
 - 중요한 것은 로그가 있다는 사실과 로그에 있는 정보
 - 따라서 `IDomainLogger` 만 목으로 처리해도 보호 수준은 충분
+
+<br/>
+
+## 2. 목을 처리의 두 가지 주요 모범 사례
+
+**실펴본 것**
+- 비관리 의존성에만 목 적용하기
+- 시스템 끝에 있는 의존성에 대해 상호 작용 검증
+
+**살펴볼 것**
+- 통합 테스트에서만 목을 사용하고 단위 테스트에서는 하지 않기
+- 항상 목 호출 수 확인하기
+- 보유 타임만 목으로 처리하기
+
+<br/>
+
+### 2.1 목은 통합 테스트만을 위한 것
+
+- Mock은 컨트롤러와 같은 비관리 의존성에만 사용해야 하며, 통합 테스트에서 컨트롤러를 테스트할 때만 목을 적용해야 함
+
+<br/>
+
+### 2.2 테스트당 목이 하나일 필요는 없음
+
+- 기존의 오해: 단위 테스트에서의 '단위'는 코드 단위를 나타내며, 이러한 모든 단위는 서로 격리해 테스트해야 한다는 것)
+- BUT. **'단위'** 는 코드 단위가 아니라 **동작 단위**를 의미
+
+- 동작 단위를 구현하는 데 필요한 코드의 양은 관계가 없음 👉🏻 단일 클래스부터 아주 작은 메서드일 수 있음
+
+<br/>
+
+### 2.3 호출 횟수 검증하기
+
+- 비관리 의존성과의 통신에 관해서는 다음 두 가지 모두 확인하는 것이 중요
+
+- 예상하는 호출이 있는가? 
+- 예상치 못한 호출은 없는가?
+
+<br/>
+
+✔️ 호환성은 양방향이어야 함
+- 애플리케이션은 외부 시스템이 **예상하는 메시지** / **예상치 못한 메시지**  생성해서는 안 됨 
+
+
+<table>
+<tr>
+<th>메시지를 전송하는지 확인<br/><small>충분하지 않음</small></th>
+<td>
+
+```csharp
+messageBusMock.Verify(
+    x => x.SendEmailChangedMessage(user.UserId, "new@gmail.com"));
+```
+
+</td>
+</tr>
+<tr>
+<th>정확히 한 번만 전송되는지 확인</th>
+<td>
+
+```csharp
+messageBusMock.Verify(
+  x => x. SendEmailChangedMessage(user.UserId, "new@gmail.com"), 
+  Times.Once);  // 해당 메서드를 한 번만 호출하는지 확인
+```
+
+</td>
+</tr>
+<tr>
+<th>다른 호출이 없는지 명시적으로 확인</th>
+<td>
+
+```csharp
+messageBusMock.Verify(
+  x => x.SendEmailChangedMessage(user.UserId, "new@gmail.com"), 
+  Times.Once);
+messageBusMock.VerifyNoOtherCalls(); // 추가 확인
+```
+
+</td></tr>
+<tr>
+<th>BusSpy</th>
+<td>
+
+```csharp
+busSpy
+    .ShouldSendNumberOfMessages(1)
+    .WithEmailChangedMessage(user.UserId, "new@gmail.com");
+```
+
+</td></tr>
+</table>
+
+스파이에 있는 `ShouldsendNumberofMessages(1)` 이라는 확인은 목에서 `Times.once` 와 `VerifNoOtherCalls()` 검증 모두 포함
+
+<br/>
+
+### 2.4 보유 타입만 목으로 처리하기
+
+- 보유 타입만 목으로 처리
+- 스티브 프리먼과 냇 프라이스가 처음 소개
+
+서드파티 라이브러리 위에 항상 어댑터 _adapter_ 작성
+
+→ 서드 파트를 그대로 사용할 수 있도혹 해당 어댑터를 Mock으로 처리해야 함
+
+> - 서드파티 코드의 작동 방식에 대해 깊이 이해하지 못하는 경우가 많음
+> - 외부 코드가 내장 인터페이스를 가진다고 해도 그 인터페이스를 Mocking 한다고 하면, 그 동작이 정말로 실제와 동일한 동작을 하는지 확실하지 않기 때문에 위험 부담이 있음 
+> - 서드파티 코드 세부 사항까지 꼭 알 필요는 없으므로, 애플리케이션은 어댑터를 추상화 해서 라이브러리와의 관계를 정의
+> 
+> p. 69 ⌜Growing Object-Oriented Software, Guided by Tests⌟, Steve Freeman & Nat Pryce (Addison-Wesley Professional, 2009).
+
+
+👉🏻 실제 어댑터는 코드와 외부 환경 사이의 손상 방지 계층 *anti-corruption leyer*으로 작동
+
+**어댑터의 역할**
+
+> - 기본 라이브러리의 복잡성 추상화
+> - 라이브러리의 필요한 기능만 노출
+> - 프로젝트 도메인 언어를 사용해 수행할 수 있음
+> 
+> ⌜Domain-Driven Design: Tackling Complexity in the Heart of Software⌟, Eric Evans (Addison-Wesley, 2003).
+
+
+- 샘플 CRM 프로젝트의 **IBus** Interface 에 해당
+- 기본 메시지 버스의 라이브러리가 IBus 인터페이스를 제공해도, 지정 래퍼를 그 위에 두는 것이 좋음
+  - 라이브러리 업그레이드 시, 서드파티 코드 변경을 예측할 수 없음 
+  - 추상 계층은 외부 변경에 의한 파급 효과를 하나의 클래스(어댑터 등) 내로 제한할 수 있음
+
+'보유 타입을 목으로 처리하라' 는 프로세스 내부 의존성에 적용되지 않음
+
+<br/><br/>
