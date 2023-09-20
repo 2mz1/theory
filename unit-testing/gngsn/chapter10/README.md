@@ -8,9 +8,9 @@
   - vs **일반 데이터**: 애플리케이션에서 해당 데이터를 **수정 가능**하면 **일반 데이터**, **수정 불가**하면 **참조 데이터**
 - 개발자마다 데이터베이스 인스턴스를 별도로 두게 하라
   - 더 좋은 방법은 개발자 장비에 인스턴스를 호스팅하는 것 (테스트 실행 속도를 극대화)
-- 데이터베이스 배포 방식
-  1. 상태 기반: 상태를 명시적으로 만들고 비교 도구가 마이그레이션을 암묵적으로 제어할 수 있음
-  2. 마이그레이션 기반 방식: 데이터 베이스를 특정 상태에서 다른 상태로 전환하게끔 명시적 마이그레이션 사용
+- **데이터베이스 배포 방식**
+  1. **상태 기반**: 상태를 명시적으로 만들고 비교 도구가 마이그레이션을 암묵적으로 제어할 수 있음
+  2. **마이그레이션 기반 방식**: 데이터 베이스를 특정 상태에서 다른 상태로 전환하게끔 명시적 마이그레이션 사용
   - 데이터베이스 상태가 명확하면 병합 충돌을 좀 더 쉽게 처리할 수 있는 데 반해, 명시적 마이그레이션은 데이터 모션 문제를 해결하는 데 도움이 된다.
   - 상태 기반 방식보다는 마이그레이션 기반 방식을 선호: 데이터 모션 처리가 병합 충돌보다 훨씬 중요하기 때문
 - 데이터베이스 트랜잭션 매커니즘에 의존하여, 비즈니스 연산 데이터를 원자적으로 업데이트하라
@@ -25,12 +25,12 @@
 - 인메모리 데이터베이스는 사용 X
   - 운영 환경과 달라 보호 수준이 떨어짐. 테스트에서도 같이 동 일한 DBMS를 사용하라
 - 필수가 아닌 부분을 **비공개 메서드** 또는 **헬퍼 클래스**로 추출해 테스트를 단축하라
-- 코드 재사용
-  - 준비 구절: 테스트 데이터 빌더 대신 오브젝트 마더를 선택
-  - 실행 구절: 데코레이터 메서드 작성
-  - 검증 구절: 플루언트 인터페이스 도입
-- 읽기 테스트: 가장 복잡하거나 중요한 읽기 작업만 테스트하고, 나머지는 무시하라
-- 리포지터리 테스트: 직접 테스트 X. 통합 테스트 스위트로 취급하라
+- **코드 재사용**
+  - **준비 구절**: 테스트 데이터 빌더 대신 오브젝트 마더를 선택
+  - **실행 구절**: 데코레이터 메서드 작성
+  - **검증 구절**: 플루언트 인터페이스 도입
+- **읽기 테스트**: 가장 복잡하거나 중요한 읽기 작업만 테스트하고, 나머지는 무시하라
+- **리포지터리 테스트**: 직접 테스트 X. 통합 테스트 스위트로 취급하라
 
 
 <br/><br/>
@@ -39,7 +39,7 @@
 
 <br/>
 
-## 1 데이터베이스 테스트를 위한 전제 조건
+## 1. 데이터베이스 테스트를 위한 전제 조건
 
 ## 1.1 데이터베이스를 형상 관리 시스템에 유지
 
@@ -96,7 +96,7 @@
 <table>
 <tr>
 <td></td>
-<td><b>상태 기반</b><i>The state-based approach</i></td>
+<td width="560px"><b>상태 기반</b><i>The state-based approach</i></td>
 <td><b>마이그레이션 기반</b><i>The migration-based approach</i></td>
 </tr>
 <tr>
@@ -141,7 +141,7 @@
 </table>
 
 <pre>
-<b>데이터 모션<b> <i>Data motion</i>
+<b>데이터 모션</b> <i>Data motion</i>
 : 새로운 데이터베이스 스키마를 준수하도록 기존 데이터의 형태를 변경하는 과정
 </pre>
 
@@ -556,12 +556,12 @@ User user = CreateUser(email: "user@mycorp.com", type: UserType.Employee);
 ```
 
 <pre>
-<b>📌Object Mother vs. Test Data Builder</b>
+<b>📌 Object Mother vs. Test Data Builder</b>
 
 - <b>Object Mother</b>: 테스트 픽스처(테스트 실행 대상)를 만드는 데 도움이 되는 클래스 또는 메서드
 - <b>Test Data Builder</b>: 오브젝트 마더와 유사하지만, 일반 메서드 대신 플루언트 인터페이스를 제공
 
-Test Data Builder Example.
+<b>Test Data Builder Example.</b>
 <code>
 User user = new UserBuilder()
     .WithEmail("user@mycorp.com")
@@ -674,13 +674,13 @@ public class UserControllerTests : IntegrationTests {
         // Assert
         Assert.Equal("OK", result);
 
-        User userFromDb = QueryUser(user.UserId);       1
+        User userFromDb = QueryUser(user.UserId);
         userFromDb
             .ShouldExist()
             .WithEmail("new@gmail.com")
             .WithType(UserType.Customer);
 
-        Company companyFromDb = QueryCompany();         1
+        Company companyFromDb = QueryCompany();
         companyFromDb
             .ShouldExist()
             .WithNumberOfEmployees(0);
@@ -703,12 +703,12 @@ public class UserControllerTests : IntegrationTests {
 
 ### 5.1. 읽기 테스트를 해야 하는가?
 
-읽기 작업의 버그에는 보통 해로운 문제가 없음
-가장 복잡하거나 중요한 읽기 작업만 테스트하고, 나머지는 무시하라
+- 읽기 작업의 버그에는 보통 해로운 문제가 없음
+- 가장 복잡하거나 중요한 읽기 작업만 테스트하고, 나머지는 무시하라
 
-읽기에 대한 도메인 모델도 필요하지 않음
-도메인 모델링의 주요 목표 중 하나는 캡슐화인ㄴ데, 데이터 변경이 없으면 캡슐화의 의미가 없음
-불필요한 추상 계층을 피해 ORM 보다 일반 SQL을 사용하는 것이 좋음
+- 읽기에 대한 도메인 모델도 필요하지 않음
+  - 도메인 모델링의 주요 목표 중 하나는 캡슐화인데, 데이터 변경이 없으면 캡슐화의 의미가 없음
+  - 불필요한 추상 계층을 피해 ORM 보다 일반 SQL을 사용하는 것이 좋음
 
 <br/>
 
