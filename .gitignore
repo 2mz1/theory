@@ -3,6 +3,7 @@
 .gradle/
 build/
 out/
+target/
 
 ### Windows template
 # Windows thumbnail cache files
