@@ -24,7 +24,8 @@
 
 ## ✏️ Study
 
-| Book                                                                  | Period                    |
-|-----------------------------------------------------------------------|---------------------------|
-| [Objects](https://github.com/2mz1/theory/tree/main/objects)           | _2023-04-12 ~ 2023-07-19_ |
-| [Unit Testing](https://github.com/2mz1/theory/tree/main/unit-testing) | _2023-08-02 ~ in progress_ |
+| Book                                                                       | Period                    |
+|----------------------------------------------------------------------------|---------------------------|
+| [Objects](https://github.com/2mz1/theory/tree/main/objects)                | _2023-04-12 ~ 2023-07-19_ |
+| [Unit Testing](https://github.com/2mz1/theory/tree/main/unit-testing)      | _2023-08-02 ~ 2023-10-04_ |
+| [Docker & Kubernetes](https://github.com/2mz1/theory/tree/main/docker-k8s) | _2023-10-18 ~ in progress_ |
