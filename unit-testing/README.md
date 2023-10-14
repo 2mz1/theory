@@ -10,7 +10,7 @@
 
 ## Study Period
 
-_2023-08-02 ~ in progress_
+_2023-08-02 ~ 2023-10-04 (9주)_
 
 <br/>
 
@@ -18,8 +18,8 @@ _2023-08-02 ~ in progress_
 
 | Nickname                                                                      | Completed | 
 |-------------------------------------------------------------------------------|-----------|
-| [@pursue503](https://github.com/2mz1/theory/tree/main/unit-testing/pursue503) | 📖        |
-| [@gngsn](https://github.com/2mz1/theory/tree/main/unit-testing/gngsn)              | 📖        |
-| [@Mingsicogi](https://github.com/2mz1/theory/tree/main/unit-testing/bbangdi.ming)  | 📖        |
+| [@pursue503](https://github.com/2mz1/theory/tree/main/unit-testing/pursue503) | ✔️        |
+| [@gngsn](https://github.com/2mz1/theory/tree/main/unit-testing/gngsn)              | ✔️        |
+| [@Mingsicogi](https://github.com/2mz1/theory/tree/main/unit-testing/bbangdi.ming)  | ✔️        |
 
 <small><i>📖 - processing, ✔️- completed, ❌- stopped</i></small>
