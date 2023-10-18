@@ -1,8 +1,16 @@
-FROM ubuntu:latest
+#FROM ubuntu:latest
+#
+#WORKDIR /app
+#
+#COPY helloworld /app
+#RUN chmod +x /app/helloworld
+#
+#CMD ["/app/helloworld"]
 
-WORKDIR /app
 
-COPY helloworld /app
-RUN chmod +x /app/helloworld
+FROM openjdk:17-jdk-slim
 
-CMD ["/app/helloworld"]
+COPY helloworld.jar /app/app.jar
+RUN chmod +x /app/app.jar
+
+CMD ["java", "-jar", "/app/app.jar"]
