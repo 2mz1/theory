@@ -1,0 +1,7 @@
+version: "3"
+services:
+  helloserver:
+#    image: minssogi/study:1.1
+    build: .
+    ports:
+      - "18080:8080"
