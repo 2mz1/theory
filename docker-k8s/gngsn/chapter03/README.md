@@ -141,37 +141,200 @@ CMD ["cron" "-f"]   # ⑤
 
 - 애플리케이션을 만들 때는 일반적으로 재사용성과 유연성을 가질 수 있도록 옵션을 만들어 두고 동작 제어
 - 애플리케이션의 동작을 제어하는 방법으로는 아래와 같은 사항이 있음
-  - 실행 시 인자 사용
-    - 
-  - 설정 파일
-  - 애플리케이션 동작을 환경 변수로 제어
-  - 설정 파일에 환경 변수를 포함 
+
+**✔️ 실행 시 인자를 사용**
+
+- 장점
+  - 외부에서 값을 주입받을 수 있음
+- 단점
+  - 너무 많은 인자를 받으면, 인자를 내부 변수로 매핑해주는 처리가 복잡해짐
+  - CMD 및 ENTRYPOINT 인스트럭션 내용을 관리하기가 어려워질 수 있음
+
+**✔️ 설정 파일 사용**
 
 
-### 04. 
+**✔️ 환경 변수 제어**
+
+<br/>
+
+## 04. 퍼시스턴스 데아터를 다루는 방법
+
+### 데이터 볼륨 (data volume):
+- 호스트와 컨테이너 사이의 디렉터리 공유 및 재사용 기능을 제공
+- 컨테이너를 파기해도 디스크에 그대로 남으므로 컨테이너로 상태를 갖는 애플리케이션을 실행하는데 적합
+
+: 도커 컨테이너 안의 디렉터리를 디스크에 퍼시스턴스 데이터로 남기기 위한 메커니즘
+- 도커 이미지를 수정하고 새로 컨테이너를 생성해도 같은 데이터 볼륨을 계속 사용할 수 있음
+
+<br/>
+
+#### `docker run -v` option
+
+```shell
+❯ docker container run [options] -v 호스트_디렉터리:컨테이너_디렉터리 리포지토리명[:태그] [명령] [명령인자]
+```
+
+데이터 볼륨 생성 명령어
+
+- 젠킨스 도커 이미지는 `/var/jenkins_home`을 홈 디레터리로 삼아 여러 파일을 보관
+- 컨테이너 생성 시, 데이터 볼륨 설정을 통해 컨테이너 내의 `/var/jenkins_home` 디렉터리가 **호스트의 지정 경로와 공유**되기 때문에 컨테이너가 정지되거나 파기돼도 그 파일이 그대로 유지됨
+- 컨테이너 내 설정 파일을 쉽게 수정할 수 있지만, 특정 호스트 파일 경로에 의존성 발생 
+
+<br/>
+
+### 데이터 볼륨 컨테이너
+
+**데이터 볼륨 컨테이너** 
+- 데이터를 저장하는 것만이 목적인 컨테이너
+- 컨테이너가 갖는 퍼시스턴스 데이터로 볼륨으로 활용해 컨테이너에 공유하는 컨테이너
+- 컨테이너의 데이터 퍼시스턴스 기법으로 추천
+
+<br/>
+ 
+> **📌 Data Volume vs Data Volume Container**
+> 
+> ✔️ Data Volume: 컨테이너와 호스트 사이의 디렉터리를 공유
+> ✔️ Data Volume Container: 컨테이너 간에 디렉터리를 공유**.
+
+<br/><img src="./image/image01.png" width="80%" /><br/>
+
+**데이터 볼륨 컨테이너 + 호스트 머신**
+- 데이터 볼륨 컨테이너가 공유한 디렉터리 역시 호스트 머신의 스토리지에 저장된다는 점에서는 데이터 볼륨과 똑같음
+- Data container volume의 볼륨은 호스트 쪽 특정 디렉터리에 의존성을 갖는데, 도커에서 관리하는 영역이 지정되어 있기 때문
+  - **호스트 머신의 `/var/lib/docker/volumes/` 아래에 위치**
+- 호스트-컨테이너 데이터 볼륨과 비교하면 호스트 머신이 컨테이너에 미치는 영향을 최소한으로 억제
+
+
+<br/>
+
+### 데이터 볼륨에 MySQL 데이터 저장
+
+Demo - mysql 참고
+
+```dockerfile
+FROM busybox
+
+VOLUME /var/lib/mysql
+
+CMD ["bin/true"]
+```
+
+- 데이터 볼륨 컨테이너는 데이터를 저장하는 것만을 목적으로 하는 컨테이너이기 때문에 busybox 처럼 작은 이미지를 사용하는 것이 효과적
+
+<small>busybox: 최소한의 운영체제 기능만 제공하는 경량 운영체제. 도커 이미지의 기반 이미지로 많이 사용됨</small>
+
+```shell
+❯ docker image build -t gngsn/mysql-data:latest .
+[+] Building 3.4s (6/6) FINISHED                     
+...
+=> => naming to docker.io/gngsn/mysql-data:latest                                                                     0.0s
+```
+
+```shell
+❯ docker container run -d --name mysql-data gngsn/mysql-data:latest
+5370d167c0bb8c5edec60c95a1e8efc152da92a8e720fafe6825e2410e5687be                                                                0.0s
+```
+
+```shell
+❯ docker container run -d --rm --name mysql \
+  -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" \
+  -e "MYSQL_DATABASE=volume_test" \
+  -e "MYSQL_USER=example" \
+  -e "MYSQL_PASSWORD=example" \
+  --volumes-from mysql-data \
+  --platform linux/amd64 \
+  mysql:5.7 
+```
+
+- Apple M1 & M2 Chip에서는 `--platform linux/amd64` 옵션 입력 필요
+- 위 컨테이너는 CMD 인스트리션에서 셀을 실행하는 것이 전부기 때문에 실행이 끝나면 컨테이너가 바로 종료됨
 
 
 
+```shell
+docker container exec -it mysql mysql -u root -p volume_test
+Enter password: 
+...
+mysql> CREATE TABLE user(
+    ->    id int PRIMARY KEY AUTO_INCREMENT,
+    ->    name VARCHAR(255)
+    ->  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> INSERT INTO user (name) VALUES ('gngsn'), ('docker'), ('sunny');
+Query OK, 3 rows affected (0.04 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM user;
++----+--------+
+| id | name   |
++----+--------+
+|  1 | gngsn  |
+|  2 | docker |
+|  3 | sunny  |
++----+--------+
+3 rows in set (0.00 sec)
+```
+
+**컨테이너 정지**
+
+```shell
+❯ docker container stop mysql
+mysql
+```
+
+컨테이너 다시 실행 후 확인해도 데이터 남아있는 것을 확인할 수 있음 
+
+```shell
+❯ docker container stop mysql
+mysql
+❯ docker container run -d --rm --name mysql \
+  -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" \
+  -e "MYSQL_DATABASE=volume_test" \
+  -e "MYSQL_USER=example" \
+  -e "MYSQL_PASSWORD=example" \
+  --volumes-from mysql-data \
+  --platform linux/amd64 \
+  mysql:5.7
+773041ee734fd0da665597a8568e03e6da47dc4f9a26d43c14d26d871bdfa01b
+
+❯ docker container exec -it mysql mysql -u root -p volume_test
+Enter password: 
+...
+mysql> SELECT * FROM user;
++----+--------+
+| id | name   |
++----+--------+
+|  1 | gngsn  |
+|  2 | docker |
+|  3 | sunny  |
++----+--------+
+3 rows in set (0.00 sec)
+```
+
+<br/>
+
+### 데이터 익스포트 및 복원
+
+**데이터를 Export 후 다른 위치에 복원하는 방법**
+
+1. busybox 컨테이너를 새로 실행
+2. 데이터 볼륨 컨테이너를 mysql-data 로 지정
+3. 컨테이너 안에서 따로 데이터를 압축한 다음, 압축된 파일이 위치한 /tmp 디렉터리를 현재 작업 디렉터리에 마운트
+
+```shell
+❯ docker container run -v ${PWD}:/tmp \
+--volumes-from mysql-data \
+busybox \
+tar cvzf /tmp/mysql-backup.tar.gz /var/lib/mysql
+```
+
+압축된 데이터를 호스트의 /tmp 디렉터리 아래에서 확인 가능
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+> `docker image save`
+> 도커 이미지를 파일로 아카이빙하는 명령
+> 데이터 볼륨에는 사용할 수 없음 
 
 
 
