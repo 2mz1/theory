@@ -1,0 +1,8 @@
+- Kubernetes 의 내부 구현이 어땠을까
+  - 처음 추측: Docker 명령어를 내부에서 사용하는 건가?
+  - 다음 추측: Containerd나 CRI-O 를 같이 관리하니까 컨테이너 관리 레벨을 사용할 것이다.
+  - 그렇다면 Kubernetes 실제 내부 동작은 어떨까
+- Docker 자체 만으로 Cluster 관리가 가능한가?
+- Master 하나가 죽으면 다 죽는 거 아닌가?
+  - Master를 N개 늘리면 종속된 worker M개가 N * M으로 늘어나지 않나?
+  - 그래서 Kubernetes managers이 앞으로 튀어나와 있나?

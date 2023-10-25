@@ -29,6 +29,8 @@
   - 대부분 cron을 사용
   - cron은 하나의 프로세스
 
+<br/>
+
 ```dockerfile
 RUM ubuntu: 16.04         # ①
 
@@ -196,7 +198,7 @@ CMD ["cron" "-f"]   # ⑤
 > ✔️ Data Volume: 컨테이너와 호스트 사이의 디렉터리를 공유
 > ✔️ Data Volume Container: 컨테이너 간에 디렉터리를 공유\*\*.
 
-<br/><img src="./image/image01.png" width="80%" /><br/>
+<br/><img src="./image/image01.png" width="70%" /><br/>
 
 **데이터 볼륨 컨테이너 + 호스트 머신**
 
@@ -361,20 +363,23 @@ tar cvzf /tmp/mysql-backup.tar.gz /var/lib/mysql
     - 도커 호스트 역할을 할 도커 컨테이너를 여러 개 실행하는 방법
     - 도커 컨테이너 안에서 도커 호스트를 실행할 수 있음
 
+<br/>
+<br/><img src="./image/image02.png" width="70%" /><br/>
 
-<br/><img src="./image/image02.png" width="80%" /><br/>
+사용할 컨테이너: 다음 3종류로 모두 합해 5개
 
-- 사용할 컨테이너: 다음 3종류로 모두 합해 5개
-  - registry x 1
-    - 도커 레지스트리 역할을 할 컨테이너
-    - dind 환경에서는 외부 도커 데몬에서 빌드된 도커 이미지를 dind 컨테이너의 파일 시스템을 통해 사용할 수 없음
-    - 실제 업무에서는 도커 허브나 별도로 사전 구축한 인하우스 레지스트리를 사용하는 경우가 많음
-  - manager x 1
-    - 스웜 클러스터 전체를 제어하는 역할
-    - 여러대 실행되는 도커 호스트(worker)에 서비스가 담긴 컨테이너를 적절히 배치
-  - worker x 3
+- registry x 1
+  - 도커 레지스트리 역할을 할 컨테이너
+  - dind 환경에서는 외부 도커 데몬에서 빌드된 도커 이미지를 dind 컨테이너의 파일 시스템을 통해 사용할 수 없음
+  - 실제 업무에서는 도커 허브나 별도로 사전 구축한 인하우스 레지스트리를 사용하는 경우가 많음
+- manager x 1
+  - 스웜 클러스터 전체를 제어하는 역할
+  - 여러대 실행되는 도커 호스트(worker)에 서비스가 담긴 컨테이너를 적절히 배치
+- worker x 3
 
+<br/>
 
+**✔️ 1. docker-compose 실행**
 실습: swarm/docker-compose.yml 실행
 
 ```
@@ -388,4 +393,479 @@ docker-compose up -d
  ```
 
 
+**✔️ 2. `docker swarm init` 명령을 실행해서 manager 역할 할당**
 
+`swarm init` 명령어로 도커를 manager로 지정
+
+```
+❯ docker container exec -it manager docker swarm init
+```
+
+실습: swarm/docker-compose.yml 실행
+
+<br/>
+
+**💣 오류 발생**
+
+<code lang="bash">Your kernel does not support cgroup memory limit</code>
+
+**🔮 해결**
+: docker-image 변경
+
+|         before         |         after         |
+| ------------------------------------------------------ | ------------------------------------------------- |
+| <code lang="bash">image: docker:18.05.0-ce-dind</code> | <code lang="bash">image: docker:dind</code> |
+
+<br/>
+
+```
+❯ docker container exec -it manager docker swarm init
+Swarm initialized: current node (kpi51cw4tk068tnw4volixlwz) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-1bmnk5x6jh4p8xbxvb9m79hr5m3jw05hannuakr3rdha6quedg-7p3t6qo689d1mivf5nmbw4ji9 172.22.0.3:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+```
+
+- `swarm init` 명령이 성공
+  - 해당 도커 호스트는 manager로 마킹되고 스웜 모드 활성화
+  - join 토큰 생성되어 출력됨
+
+<br/>
+
+**✔️ 3. docker container 등록해서 클러스터 형성**
+
+worker 컨테이너에서 manager 컨테이너를 식별하도록 manager:2377 로 join 토큰 전달
+
+```
+❯ docker container exec -it worker01 docker swarm join --token SWMTKN-1-1bmnk5x6jh4p8xbxvb9m79hr5m3jw05hannuakr3rdha6quedg-7p3t6qo689d1mivf5nmbw4ji9 manager:2377
+This node joined a swarm as a worker.
+❯ docker container exec -it worker02 docker swarm join --token 
+...
+❯ docker container exec -it worker03 docker swarm join --token
+...
+```
+
+**✔️ 4. swarm cluster 상태 확인**
+
+```
+❯ docker container exec -it manager docker node ls
+ID                            HOSTNAME       STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+kpi51cw4tk068tnw4volixlwz *   2f1d697aa6f4   Ready     Active         Leader           24.0.6
+k9lyx26b36abktux99h7qj1p0     512def812136   Ready     Active                          24.0.6
+zacgstnkmj7sxrnvnekp7mz6a     67532dd07018   Ready     Active                          24.0.6
+rfn4dex61zbr4n2pf6cfdxcnh     eef23ccc6fd5   Ready     Active                          24.0.6
+```
+
+<br/>
+
+#### 📌 도커 레지스트리에 이미지 등록하기
+
+도커 레지스트리 역할을 할 registry 컨테이너에 도커 이미지 등록
+
+<br/>
+
+**✔️ 1. docker image tag**
+
+Docker Tag Command : `docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]`
+
+```bash
+❯ docker image tag gngsn/echo:latest localhost:5000/gngsn/echo:latest
+```
+
+`localhost:5000/gngsn/echo:latest`
+registry 컨테이너는 호스트에서 localhost:5000 와 같이 접근할 수 있으므로, 리포지토리 명 앞에 이 주소를 붙인 것.
+
+<br/>
+
+**✔️ 2. registry 컨테이너에 이미지 등록**
+
+docker image push 명령에 인자로 registry 컨테이너에 이미지 등록
+
+Docker Push Command : `docker push [OPTIONS] NAME[:TAG]`
+
+```bash
+❯ docker image push localhost:5000/gngsn/echo:latest
+```
+
+<br/>
+
+**✔️ 3. registry 컨테이너에서 이미지 내려받기**
+
+docker image push 명령에 인자로 registry 컨테이너에 이미지 등록
+
+Docker Push Command : `docker pull [OPTIONS] NAME[:TAG|@DIGEST]`
+
+```bash
+❯ docker container exec -it worker01 docker image pull registry:5000/gngsn/echo:latest
+```
+
+worker01에서 볼 때, registry 으로 접근 -> `registry:5000`
+
+<br/>
+
+**✔️ 4. 내려받은 docker image 확인**
+
+```bash
+❯ docker container exec -it worker01 docker image ls
+```
+
+<br/>
+
+### 서비스
+
+단일 도커 호스트에 대한 컨테이너 배포는 `docker container run` 명령으로 컨테이너를 일일이 실행하거나 compose 를 통해 여러 컨테이너 동시 실행
+
+Swarm 은 아래와 같이 넓은 범위를 아우르게 구성될 수 있기 때문에, 애플리케이션을 구성하는 이부 컨테이너를 제어하기 위한 단위로 **서비스**라는 개념이 생김
+
+- 단일 컨테이너
+- 여러 종류의 컨테이너
+- 위 모든 컨테이너의 복제된 집합
+
+<br/>
+
+#### 📌 서비스 생성
+
+<br/>
+
+**✔️ 1. 서비스 생성**
+
+```bash
+❯ docker container exec -it manager \
+docker service create --replicas 1 --publish 8000:8000 --name echo registry:5000/gngsn/echo:latest
+image registry:5000/gngsn/echo:latest could not be accessed on a registry to record
+its digest. Each node will access registry:5000/gngsn/echo:latest independently,
+possibly leading to different nodes running different
+versions of the image.
+
+js126i5zxbe0reevo42cjv2sy
+overall progress: 1 out of 1 tasks
+...
+```
+
+<br/>
+
+**✔️ 2. 서비스 확인**
+
+`docker service ls`: 현재 생성된 서비스 목록 확인
+
+```bash
+❯ docker container exec -it manager docker service ls
+ID             NAME      MODE         REPLICAS   IMAGE                             PORTS
+js126i5zxbe0   echo      replicated   1/1        registry:5000/gngsn/echo:latest   *:8000->8000/tcp
+```
+
+<br/>
+
+**✔️ 3. 서비스의 컨테이너 수 조절**
+
+`docker service scales`: 현재 생성된 서비스 목록 확인
+
+- 레플리카 수를 늘리라는 명령으로 자동으로 컨테이너를 복제하고 여러 노드에 배치함
+- 이를 통해 애플리케이션을 쉽게 스케일 아웃할 수 있음
+- 각각의 컨테이너 수만큼 `docker container run` 명령을 반복해야겠지만, 현실적이지 않음
+
+```bash
+❯ docker container exec -it manager docker service scale echo=6
+```
+
+늘어난 REPLICAS 확인
+
+```bash
+❯ docker container exec -it manager docker service ls
+ID             NAME      MODE         REPLICAS   IMAGE                             PORTS
+js126i5zxbe0   echo      replicated   6/6        registry:5000/gngsn/echo:latest   *:8000->8000/tcp
+```
+
+<br/>
+
+**✔️ 4. 서비스 삭제**
+
+```bash
+❯ docker container exec -it manager docker service rm echo
+echo
+
+❯ docker container exec -it manager docker service ls
+ID        NAME      MODE      REPLICAS   IMAGE     PORTS
+```
+
+<br/>
+
+### 스택
+
+: 하나 이상의 서비스를 그룹으로 묶은 단위
+
+- `docker stack [OPTIONS]` 하위 명령으로 조작
+- **서비스**는 애플리케이션 이미지를 하나밖에 다루지 못하지만, 여러 서비스가 협조해 동작하는 형태로는 다양한 애플리케이션을 구성할 수 있음
+- **스택**이 이를 구현하게 해주는 상위 개념
+
+  - 애플리케이션 전체 구성을 정의
+
+- 스택이 다루는 애플리케이션의 granularity (입도, 구성 요소들의 크기나 규모)는 Compose와 같음
+- Swarm에서 동작하는 Scale-in, Scale-out, 제약 조건을 부여할 수 있는 Compose라고 볼 수 있음
+
+**Network**
+: 스택을 사용해 배포된 서비스 그룹은 `overlay` 네트워크에 속함
+<small>`overlay` 네트워크: 여러 도커 호스트에 걸쳐 배포된 컨테이너 그룹을 같은 네트워크에 배치하기 위한 기술</small>
+
+- overlay 네트워크를 설정하지 않으면 다른 서비스를 발견할 수 없어 통신이 불가능 (스택마다 서로 다른 overlay 네트워크를 생성하고 그 안에 서비스 그룹이 속하게 됨)
+
+<br/><img src="./image/image03.png" width="70%" /><br/>
+
+<br/>
+
+#### 📌 0. 스택 생성
+
+스택 역시 Swarm 과 마찬가지로 manager 컨테이너에서 조작
+
+<br/>
+
+**✔️ 1. 네트워크 생성**
+
+```bash
+❯ docker container exec -it manager docker network create --driver=overlay --attachable ch03
+hv3p5wt5bite1gpx4h60bmg0k
+```
+
+<br/>
+
+**✔️ 2. 스택으로 만든 각 서비스를 네트워크에 연결**
+
+- Backend API (echo container)의 리버스 프록시를 Nginx로 설정하여 프론트엔드로 삼는다
+- 스택으로 배포된 api의 서비스 명인 echo_api 의 포트 8000을 설정
+
+```bash
+❯ mkdir stack && cd ./stack
+❯ vi ch03-webapi.yml
+version: "3"
+services:
+  nginx:
+    image: gihyodocker/nginx-proxy:latest
+    deploy:
+      replicas: 3
+      placement:
+        constraints: [node.role != manager]
+    environment:
+      SERVICE_PORTS: 80
+      BACKEND_HOST: echo_api:8080
+    depends_on:
+      - api
+    networks:
+      - ch03
+  api:
+    image: registry:5000/example/echo:latest
+    deploy:
+      replicas: 3
+      placement:
+        constraints: [node.role != manager]
+    networks:
+      - ch03
+networks:
+  ch03:
+    external: true
+```
+
+#### docker stack 하위 명령
+
+| Stack sub command       | describe                                  |
+| ----------------------- | ----------------------------------------- |
+| `docker stack deploy`   | 스택을 새로 배포, 혹은 업데이트           |
+| `docker stack ls`       | 배포된 스택의 목록을 출력                 |
+| `docker stack ps`       | 스택에 의해 배포된 컨테이너의 목록을 출력 |
+| `docker stack rm`       | 배포된 스택을 삭제                        |
+| `docker stack services` | 스택에 포함된 서비스 목록을 출력          |
+| `docker stack config`   |                                           |
+
+<br/>
+
+#### 📌 1. 스택 배포
+
+```bash
+docker stack deploy [OPTIONS] STACK
+```
+
+: Swarm cluster에 Stack 배포
+
+| Option           | Short | Description                                                                 |
+| ---------------- | ----- | --------------------------------------------------------------------------- |
+| `--compose-file` | `-c`  | Path to a Compose file, or - to read from stdin. (스택 정의 파일 경로 지정) |
+
+```bash
+❯ docker container exec -it manager docker stack deploy -c ./stack/ch03-webapi.yml echo
+Creating service echo_nginx
+Creating service echo_api
+```
+
+<br/>
+
+#### 📌 2. 배포된 스택 배포 확인
+
+```bash
+docker stack services [OPTIONS] STACK
+```
+
+: 해당 스택에 배포된 서비스 목록 확인
+
+**ex. echo 서비스 목록 확인**
+
+```bash
+❯ docker container exec -it manager docker stack services echo
+ID             NAME         MODE         REPLICAS   IMAGE                               PORTS
+xhfj9oxt4jks   echo_api     replicated   3/3        registry:5000/example/echo:latest
+rj5u4duzi9ht   echo_nginx   replicated   3/3        gihyodocker/nginx-proxy:latest
+```
+
+<br/>
+
+#### 📌 3. 스택에 배포된 컨테이너 확인하기
+
+```bash
+docker stack ps [OPTIONS] STACK
+```
+
+: 스택이 컨테이너 그룹을 어떻게 배포했는지 확인
+
+```bash
+TODO : 다시 실행
+❯ docker container exec -it manager docker stack ps echo
+ID             NAME             IMAGE                               NODE           DESIRED STATE   CURRENT STATE             ERROR                              PORTS
+vpbteckfk6yq   echo_api.1       registry:5000/example/echo:latest   512def812136   Ready           Rejected 1 second ago     "No such image: registry:5000/…"
+q7sazrzqcg57    \_ echo_api.1   registry:5000/example/echo:latest   512def812136   Shutdown        Rejected 6 seconds ago    "No such image: registry:5000/…"
+ktr9p7vabkty    \_ echo_api.1   registry:5000/example/echo:latest   eef23ccc6fd5   Shutdown        Rejected 11 seconds ago   "No such image: registry:5000/…"
+k3zago440p0q    \_ echo_api.1   registry:5000/example/echo:latest   512def812136   Shutdown        Rejected 16 seconds ago   "No such image: registry:5000/…"
+x1606dzamh5n    \_ echo_api.1   registry:5000/example/echo:latest   512def812136   Shutdown
+```
+
+<br/>
+
+#### 📌 + visualizer를 사용해 컨테이너 배치 시각화
+
+**visualizer**: Swarm 클러스터에 컨테이너 그룹이 어떤 노드에 어떻게 배치됐는지 시각화해주는 애플리케이션
+
+- **이미지 이름**: `dockersamples/visualizer`
+
+```bash
+version: "3"
+
+services:
+  app:
+    image: dockersamples/visualizer
+    ports:
+      - "9000:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role == manager]
+```
+
+`ports: - "9000:8080"`: manager 노드 포트 9000을 visualizer 컨테이너 포트 8000으로 포트포워딩 (호스트 <-> manager는 9000:9000)
+`deploy` 의 속성 값의 `mode: global`: 클러스터 상의모든 노드에 배치하라는 의미
+`constraints: [node.role == manager]`: manager 노드에만 배치
+
+<br/>
+
+**스택 배포**
+
+```bash
+❯ docker container exec -it manager docker stack deploy -c /stack/visualizer.yml visualizer
+Creating network visualizer_default
+Creating service visualizer_app
+```
+
+<br/>
+
+#### 📌 4. 스택 삭제
+
+```bash
+docker stack rm [OPTIONS] STACK [STACK...]
+```
+
+: 대상 스택명을 지정하여 스택 삭제
+
+```bash
+❯ docker container exec -it manager docker stack rm echo
+Removing service echo_api
+Removing service echo_nginx
+```
+
+<br/>
+
+### Swarm Cluster 외부에서 서비스 사용하기
+
+- visualizer는 Swarm Cluster 외부 접근 가능
+  - constraints 설정에서 visualizer 컨테이너가 manager에 배치되도록 했기 때문
+  - 호스트 ~ manager 까지 포트 포워딩을 여러 단계 사용했기 때문에 가능
+- 하지만 여러 컨테이너가 여러 노드에 흩어져 배치돼 있으면 불가능
+- 서비스 클러스터 외부에서 오는 트래픽을 목적하는 서비스로 보내주는 프록시 서버 필요
+
+<br/>
+
+**프록시 서버 예시: HAProxy**
+
+: 컨테이너 외부에서 서비스에 접근할 수 있게 해주는 다리 역할(ingress) + 서비스가 배치된 노드의 로드 밸런싱 기능 제공
+
+<br/>
+
+스웜 클리스터 외부에서 echo_nginx 서비스에 접근할 수 있도록 실습
+
+_ch03-ingress.yml_
+
+```bash
+version: "3"
+
+services:
+  haproxy:
+    image: dockercloud/haproxy
+    networks:
+      - ch03
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+    ports:
+      - 80:80
+      - 1936:1935 # for stats page (basic auth. stats: stats)
+
+networks:
+  ch03:
+    external: true
+```
+
+**스택 echo 로 다시 배포**
+
+```bash
+❯ docker container -it manager docker stack deploy -c ./stack/ch03-webapi.yml echo
+```
+
+**스택 ingress 로 배포**
+
+```bash
+❯ docker container -it manager docker stack deploy -c ./stack/ch03-webapi.yml ingress
+```
+
+**서비스 현황 확인**
+
+```bash
+❯ docker container -it manager docker service ls
+```
+
+Host \[8000\] --> manager \[80\] {ingress --80-> echo_api}
+
+```bash
+❯ curl http://localhost:8000
+Hello Docker!!%
+```
+
+### Feature of Swarm
+
+- 서비스는 레플리카 수(컨테이너 수)를 조절해 컨테이너를 쉽게 복제할 수 있으며, 여러 노드에 레플리카를 배치할 수 있기 때문에 스케일 아웃에 유리
+- 서비스로 관리되는 (여러 개의) 레플리카는 서비스명으로 name resolution 되므로 서비스에 대한 트래픽이 각 레플리카로 분산됨
+- 스웜 클러스터 외부에서 스웜에 배포된 서비스를 이용하려면 서비스에 트래픽을 분산시키기 위한 프록시를 갖춰야 함
+- 스택은 하나 이상의 서비스를 그룹으로 묶을 수 있으며, 여러 서비스로 구성된 애플리케이션을 배포할 때 유용

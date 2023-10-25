@@ -10,7 +10,7 @@ services:
 
   manager:
     container_name: manager
-    image: docker:18.05.0-ce-dind
+    image: docker:dind
     privileged: true
     tty: true
     ports:
@@ -26,7 +26,7 @@ services:
 
   worker01:
     container_name: worker01
-    image: docker:18.05.0-ce-dind
+    image: docker:dind
     privileged: true
     tty: true
     depends_on:
@@ -40,7 +40,7 @@ services:
 
   worker02:
     container_name: worker02
-    image: docker:18.05.0-ce-dind
+    image: docker:dind
     privileged: true
     tty: true
     depends_on:
@@ -54,7 +54,7 @@ services:
 
   worker03:
     container_name: worker03
-    image: docker:18.05.0-ce-dind
+    image: docker:dind
     privileged: true
     tty: true
     depends_on: 
