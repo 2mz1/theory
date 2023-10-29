@@ -32,7 +32,7 @@
 <br/>
 
 ```dockerfile
-RUM ubuntu: 16.04         # ①
+RUN ubuntu: 16.04         # ①
 
 RUN apt update            # ②
 RUN apt install -y cron   # ②
@@ -538,7 +538,7 @@ docker image push 명령에 인자로 registry 컨테이너에 이미지 등록
 Docker Push Command : `docker push [OPTIONS] NAME[:TAG]`
 
 ```bash
-docker image push localhost:5000/gngsn/echo:latest
+❯ docker image push localhost:5000/gngsn/echo:latest
 The push refers to repository [localhost:5000/gngsn/echo]
 a8d2687d2a86: Pushed 
 8a599de57fcf: Pushed 
@@ -555,7 +555,7 @@ docker image push 명령에 인자로 registry 컨테이너에 이미지 등록
 Docker Push Command : `docker pull [OPTIONS] NAME[:TAG|@DIGEST]`
 
 ```bash
-docker container exec -it worker01 docker image pull registry:5000/gngsn/echo:latest
+❯ docker container exec -it worker01 docker image pull registry:5000/gngsn/echo:latest
 latest: Pulling from gngsn/echo
 317d79a9c0a5: Pull complete 
 24e48664c695: Extracting [========================>                          ]  23.59MB/48MB 
@@ -608,7 +608,6 @@ Swarm 은 아래와 같이 넓은 범위를 아우르게 구성될 수 있기 �
 6royaikec2pgmkhfrrn5ghrae
 overall progress: 0 out of 1 tasks 
 1/1: preparing [=================================>                 ] 
-verify: Detected task failure ...
 ```
 
 </td></tr>
@@ -629,9 +628,7 @@ ID             NAME      MODE         REPLICAS   IMAGE                          
 <td width="40%">✔️ 3. 서비스의 컨테이너 수 조절</td>
 <td width="60%">
 
-`docker service scales`: 현재 생성된 서비스 목록 확인
-
-- 레플리카 수를 늘리라는 명령으로 자동으로 컨테이너를 복제하고 여러 노드에 배치함
+`docker service scales`: 레플리카 수를 늘리라는 명령으로 자동으로 컨테이너를 복제하고 여러 노드에 배치함
 - 이를 통해 애플리케이션을 쉽게 스케일 아웃할 수 있음
 - 각각의 컨테이너 수만큼 `docker container run` 명령을 반복해야겠지만, 현실적이지 않음
 
