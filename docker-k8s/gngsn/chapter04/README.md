@@ -640,9 +640,9 @@ todo-mysql.yml 에 정의된 서비스를 todo_mysql Stack으로 manager contain
 
 ```Bash
 ❯ docker container exec -it manager docker service ls
-ID             NAME                MODE         REPLICAS   IMAGE                               PORTS
-35e3w2ne1ogv   todo_mysql_master   replicated   0/1        registry:5000/gngsn/tododb:latest   
-8qwa2o4t2psd   todo_mysql_slave    replicated   0/2        registry:5000/gngsn/tododb:latest   
+ID             NAME                MODE         REPLICAS   IMAGE                                      PORTS
+k0yii1idlt71   todo_mysql_master   replicated   1/1        registry:5000/gngsn/tododb-master:latest   
+un1yx2mdtcq6   todo_mysql_slave    replicated   2/2        registry:5000/gngsn/tododb-slave:latest   
 ```
 
 <br/><img src="./image/image03.png" width="60%" /><br/>
@@ -656,20 +656,123 @@ ID             NAME                MODE         REPLICAS   IMAGE                
 
 ```Bash
 ❯ docker container exec -it manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running"
-ID                          NAME                  IMAGE                                                                 NODE      DESIRED STATE   CURRENT STATE           ERROR                                                                                                  PORTS
-v0oqftwuk2u2bufs5ljw78f8a   todo_mysql_master.1   registry:5000/gngsn/tododb:latest@sha256:0106779...26621d                       Running         Pending 4 minutes ago   "no suitable node (unsupported platform on 3 nodes; scheduling constraints not satisfied on 1 node)"
+ID                          NAME                  IMAGE                                                                                                              NODE           DESIRED STATE   CURRENT STATE           ERROR     PORTS
+mojbtc46odudt4ho74v7dtm8a   todo_mysql_master.1   registry:5000/gngsn/tododb-master:latest@sha256:614c61b14ef19fb43d4c36bb0916171e2a352e6b2557bc1e15ee26af52c6e9c3   d5d52eeba974   Running         Running 2 minutes ago
 ```
 
 노드의 ID와 태스크의 ID만 알면 다음과 같이 docker container exec 명령을 중첩 실행해 원하는 컨테이너에 데이터 삽입 가능
 
 
+<table>
+<tr>
+<th>Master DB Data Init</th>
+<td>
+
 ```Bash
-❯ docker container exec -it manager docker container exec -it v0oqftwuk2u2bufs5ljw78f8a bash
+❯ docker container exec -it manager docker container exec -it mojbtc46odudt4ho74v7dtm8a
+"docker container exec" requires at least 2 arguments.
+See 'docker container exec --help'.
+
+Usage:  docker container exec [OPTIONS] CONTAINER COMMAND [ARG...]
+
+Execute a command in a running container
+/ # 
 ```
 
+</td><td>
+
+```Bash
+❯ docker container exec -it manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running" --format "docker container exec -it {{.Node}} docker container exec -it {{.Name}}.{{.ID}} bash"
+docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_master.1.mojbtc46odudt4ho74v7dtm8a bash
+```
+
+```Bash
+❯ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_master.1.mojbtc46odudt4ho74v7dtm8a init-data.sh
+```
+
+</td><td>
+
+```Bash
+❯ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_master.1.mojbtc46odudt4ho74v7dtm8a mysql -u gngsn -pgngsn tododb
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 10
+Server version: 8.0.33 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> SELECT * FROM todo LIMIT 1\G
+*************************** 1. row ***************************
+     id: 1
+  title: MySQL Docker 이미지 생성
+content: MySQL Master, Slave를 환경 변수로 설정할 수 있는 MySQL 이미지 생성
+ status: DONE
+created: 2023-10-31 15:52:57
+updated: 2023-10-31 15:52:57
+1 row in set (0.00 sec)
+```
+
+</td></tr>
+</table>
 
 
+<table>
+<tr>
+<th>Slave DB Data Init</th>
+<td>
 
+```Bash
+❯ docker container exec -it manager docker service ps todo_mysql_slave --no-trunc --filter "desired-state=running" --format "docker container exec -it {{.Node}} docker container exec -it {{.Name}}.{{.ID}} bash"
+docker container exec -it 6c30c78dc985 docker container exec -it todo_mysql_slave.1.2mqwnco92qqwgm2b9x1iqzamk bash
+docker container exec -it 3320c84927ee docker container exec -it todo_mysql_slave.2.t4ajy6v60fwo04s8pbcrmp5yc bash
+```
+
+```Bash
+❯ docker container exec -it 6c30c78dc985 docker container exec -it todo_mysql_slave.1.2mqwnco92qqwgm2b9x1iqzamk init-data.sh
+```
+
+</td><td>
+
+```Bash
+❯ docker container exec -it 6c30c78dc985 docker container exec -it todo_mysql_slave.1.2mqwnco92qqwgm2b9x1iqzamk mysql -u gngsn -pgngsn tododb
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 10
+Server version: 8.0.33 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> SELECT * FROM todo LIMIT 1\G
+*************************** 1. row ***************************
+     id: 1
+  title: MySQL Docker 이미지 생성
+content: MySQL Master, Slave를 환경 변수로 설정할 수 있는 MySQL 이미지 생성
+ status: DONE
+created: 2023-10-31 16:03:23
+updated: 2023-10-31 16:03:23
+1 row in set (0.00 sec)
+```
+
+</td></tr>
+</table>
 
 
 

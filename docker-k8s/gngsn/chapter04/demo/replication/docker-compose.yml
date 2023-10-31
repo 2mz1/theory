@@ -1,12 +1,11 @@
 version: "3"
 
-services: 
+services:
   master:
-    image: registry:5000/gngsn/tododb-master:latest
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [node.role != manager]
+    build:
+      context: ./
+      dockerfile: master/Dockerfile
+    image: gngsn/tododb-master:latest
     environment:
       MYSQL_ROOT_PASSWORD: gngsn
       MYSQL_DATABASE: tododb
@@ -17,11 +16,10 @@ services:
       - todoapp
 
   slave:
-    image: registry:5000/gngsn/tododb-slave:latest
-    deploy:
-      replicas: 2
-      placement:
-        constraints: [node.role != manager]
+    build:
+      context: ./
+      dockerfile: slave/Dockerfile
+    image: gngsn/tododb-slave:latest
     depends_on:
       - master
     environment:
