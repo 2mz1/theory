@@ -774,14 +774,144 @@ updated: 2023-10-31 16:03:23
 </td></tr>
 </table>
 
+<br/>
+
+## 03. API 서비스 구축
+
+```Bash
+❯ git clone https://github.com/gihyodocker/todoapi
+```
+
+```Bash
+(todoapi) $ tree -a -I '.git|.gitignore'
+.
+dockerignore -- 컨테이너에 넣지 않을 파일 및 디렉터리 정의 
+cmd
+    main.go -- 애플리케이션 시작
+db.go -- MySQL 접속
+Dockerfile -- 애플리케이션을 빌드하고 이미지를 생성하는 Dockerfile
+env.go -- main.go에서 사용하는 환경 변수 생성
+handler.go -- HTTP 요청을 받으면 비즈니스 로직을 수행하고 용답을 돌려줌
+```
+
+`env.go`의 정의 환경변수를 살펴보면 아래와 같음
+
+- CreateEnv 함수는 **필요한 환경 변수값을 가져와 구조체에 저장해 반환**해 다루기 편리하도록 함
+- os.GetEnv 함수는 환경 변수 값을 구하는 함수로, **인자로 지정된 환경 변수의 값을 반환**
+- TODO_BIND: API가 Listening 포트로 사용할 포트 값을 저장하는 환경 변수
+- TODO_MASTER_URL, TODO SIAVE_URL 은 MySQL Master 및 Slave에 대한 각각의 접속 정보
+
+<br/>
+
+### MySQL 접속 및 테이블 매핑
+
+_db.go_
+
+- CreateDbMap 함수: `[DB사용자 명]:[DB패스워드]@tcp([DB호스트]:[DB포트))/[DB명]` 형식으로 정의된 접속 정보를 받아 MySQL에 접속
+
+```Go
+func CreateDbMap(dbURL string) (*gorp.DbMap, error) {
+
+	ds, err := createDatasource(dbURL)
+	if err != nil {
+		return nil, err
+	}
+
+	db := &gorp.DbMap{
+		Db: ds,
+		Dialect: gorp.MySQLDialect{
+			Engine:   "InnoDB",
+			Encoding: "utf8mb4",
+		},
+	}
+
+	db.AddTableWithName(Todo{}, "todo").SetKeys(true, "ID")
+	return db, nil
+}
+```
+
++ `db.go` 에는 테이블 매핑을 위한 구조체도 정의되어 있음
+
+<br/>
+
+### 핸들러 구현
+
+- `cmd/main.go` 파일의 ⑥은 엔드포인트 `/todo` 에 `NewTodoHandler` 로 생성한 핸들러를 설정한 후 `TodoHandler` 의 `ServeHITTP` 함수가 이 요청을 받도록 한 것
+
+<table>
+<tr>
+  <th>serveGET (read TODO)</th><th>servePOST (create TODO)</th><th>servePUT (modify TODO)</th>
+</tr>
+<tr><td>
+<pre><code>
+$ curl -s -XGET http://localhost:8080/todo?status=TODO | jq .
+</code></pre>
+
+- todo 테이블에서 SELECT 쿼리를 실행하고 조건이 일치하는 JSON 포맷으로 된 레코드의 배열을 응답으로 반환
+
+</td>
+<td>
+<pre><code>
+$ curl -s -XPOST -d '{
+  "title": "4장 집필하기"
+  "content": "내용 검토 중"
+}' http://localhost:8080/todo
+</code></pre>
+
+- 새로운 TODO 추가
+
+</td>
+<td>
+<pre><code>
+$ curl -s -XPUT -d '{
+  "id": 1
+  "title": "4장 집필하기"
+  "content": "도커를 이용한 실전적 웹 애플리케이션 개발을 내용으로"
+  "status": "PROGRESS"
+}' http://localhost:8080/todo
+</code></pre>
+
+- 이미 추가된 TODO 수정
+- 존재하지 않으면 404 반환
+
+</td></tr></table>
+
+<br/>
+
+### API를 위한 Dockerfile
+
+WORKDIR: RUN이나 CMD 인스트럭션을 실행할 폴더 지정
+
+1. Build Dockerfile
+
+```Go
+❯ docker image build -t gngsn/todoapi:latest .
+```
+
+2. Tag
+
+```Go
+❯ docker image tag gngsn/todoapi:latest localhost:5000/gngsn/todoapi:latest
+```
+
+3. Push
+
+```Go
+❯ docker image push localhost:5000/gngsn/todoapi:latest
+```
+
+<br/>
+
+### Swarm에서 todoapi 서비스 실행하기
+
+stack 디렉터리에 위치한 todo-app.yml 파일에 api 서비스를 정의
+
+레플리카 수는 2로 하고, 애플리케이션이 개발할 포트 및 MySQL 접속 정보를 환경 변수로 정의
 
 
+_todo-app.yml_
 
-
-
-
-
-
-
+```yaml
+```
 
 
