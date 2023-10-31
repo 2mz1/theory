@@ -74,8 +74,8 @@ Caching, Routing, Access Logging 등의 역할도 수행
 overlay 네트워크 생성
 
 ```Bash
-> docker container exec -it manager \
-   docker network create --drive=overlay --attachable todoapp
+❯ docker container exec -it manager docker network create --driver=overlay --attachable todoapp
+k5qfdm4rxaiqpr4hddz8735h7
 ```
 
 <br/>
@@ -341,6 +341,331 @@ ENTRYPOINT [ \
 </table>
 
 <br/>
+
+### 빌드 및 스웜 클러스터에서 사용하기
+
+1. image build
+
+```Bash
+docker image build -t gngsn/tododb:latest .
+```
+
+<table>
+<tr>
+<th>Error #1</th>
+<td>
+
+```Bash
+❯ docker image build -t ch04/tododb:latest .
+[+] Building 3.5s (3/3) FINISHED                                                                                                                                                                                               docker:desktop-linux
+ => [internal] load .dockerignore                                                                                                                                                                                                              0.0s
+ => => transferring context: 2B                                                                                                                                                                                                                0.0s
+ => [internal] load build definition from Dockerfile                                                                                                                                                                                           0.0s
+ => => transferring dockerfile: 945B                                                                                                                                                                                                           0.0s
+ => ERROR [internal] load metadata for docker.io/library/mysql:5.7                                                                                                                                                                             3.5s
+------
+ > [internal] load metadata for docker.io/library/mysql:5.7:
+------
+Dockerfile:1
+--------------------
+   1 | >>> FROM mysql:5.7
+   2 |     
+   3 |     RUN apt-get update
+--------------------
+ERROR: failed to solve: failed to parse stage name "arm64v8/mysql:oracle:5.7": invalid reference format
+```
+
+#### Solution #1
+
+add `--platform linux/x86_64` flag
+
+</td>
+</tr>
+<tr>
+<th>Error #2</th>
+<td>
+
+```Bash
+❯ docker image build --platform linux/x86_64  -t ch04/tododb:latest .
+[+] Building 30.7s (6/18) 
+...
+ => => extracting sha256:b0e9b86ed64c8df8320596d475d3bbc4927e1e8bdc9ea97473c7e38024ae9c82                                                                                                                                                      0.0s
+ => => extracting sha256:bfef93045c96cfc909e0b6b4d373e5cb88f5a1c92c22754bf1a353220e24f02c                                                                                                                                                      0.0s
+ => [internal] load build context                                                                                                                                                                                                              0.0s
+ => => transferring context: 5.14kB                                                                                                                                                                                                            0.0s
+ => ERROR [ 2/14] RUN apt-get update                                                                                                                                                                                                           0.4s
+------
+ > [ 2/14] RUN apt-get update:
+0.116 /bin/sh: apt-get: command not found
+------
+Dockerfile:3
+--------------------
+   1 |     FROM mysql:5.7
+   2 |     
+   3 | >>> RUN apt-get update
+   4 |     RUN apt-get install -y wget
+   5 |     
+--------------------
+ERROR: failed to solve: process "/bin/sh -c apt-get update" did not complete successfully: exit code: 127
+```
+
+#### Debugging #2
+
+add `--progress=plain` option: 빌드 내용들을 모두 출력해줌
+
+<br/>
+
+#### Reason #2
+
+```Bash
+ > [ 2/14] RUN apt-get -y update:
+0.127 /bin/sh: apt-get: command not found
+```
+
+`apt-get` 명령어가 기존 이미지에 없음
+
+
+#### Solution #2
+
+Docker image 변경
+
+`mysql:5.7` → `mysql:5.7-debian`
+
+
+</td>
+</tr><tr>
+<th>Error #3</th>
+<td>
+
+```Bash
+ > [ 8/14] RUN entrykit --symlink:
+0.127 runtime: failed to create new OS thread (have 2 already; errno=22)
+0.127 fatal error: newosproc
+0.130 
+0.130 runtime stack:
+0.130 runtime.throw(0x84a820, 0x9)
+```
+
+#### Reason #3
+
+Arm version의 컨테이너에서 발생하는 문제
+
+해결법 없음: https://github.com/docker/for-mac/issues/6083
+
+<br/>
+
+#### Solution #3
+
+Dockerfile 수정
+
+entrykit 사용하지 않고 ENTRYPOINT 로만 사용
+
+```Bash
+FROM --platform=linux/amd64 mysql:5.7-debian
+
+RUN apt-get -y update
+RUN apt-get install -y wget
+
+COPY add-server-id.sh /usr/local/bin/
+COPY entrypoint.sh /usr/local/bin/
+COPY etc/mysql/mysql.conf.d/mysqld.cnf /etc/mysql/mysql.conf.d/
+COPY etc/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/
+COPY prepare.sh /docker-entrypoint-initdb.d
+COPY init-data.sh /usr/local/bin/
+COPY sql /sql
+
+ENTRYPOINT ./entrypoint.sh
+
+CMD ["mysqld"]
+```
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+**build 명령어 실행 :**
+
+```Bash
+❯ docker image build --platform linux/amd64 --progress=plain --no-cache -t gngsn/tododb:latest . 
+```
+
+- 레지스트리에 등록할 태그 명령어 실행
+
+```Bash
+❯ docker image tag gngsn/tododb:latest localhost:5000/gngsn/tododb:latest
+```
+
+이전에 실행하던 `docker-compose.yml` 을 기반으로 `docker-compose up -d` 명령어 실행
+그럼 registry 서버가 올라가고, 해당 registry 서버에 tododb 등록
+
+
+```Bash
+❯ docker image push localhost:5000/gngsn/tododb:latest
+The push refers to repository [localhost:5000/gngsn/tododb]
+1304545fd7b6: Preparing 
+cd4663989e4f: Preparing
+...
+latest: digest: sha256:0106...621d size: 4493
+```
+
+<br/>
+
+### 스웜에서 마스터 및 슬레이브 실행
+
+스웜에서 MySQL Master & Slave 역할을 할 2개의 서비스 생성
+
+- Master Service - Replica: 1
+- Slave Service - Replica: 2
+
+`/stack` directory에 todo-mysql.yml 파일을 만들고 해당 파일에 2개의 서비스를 각각 정의
+앞에서 만든 overlay 네트워크 todoapp의 external 속성을 true로 정의해 각 서비스가 이 네트워크에 속하게 해야 함
+
+
+```Bash
+❯ docker container exec -it manager ls -al /stack
+❯ docker container exec -it manager vi /stack/todo-mysql.yml
+... 위 todo-mysql.yml 작성
+❯ docker container exec -it manager docker stack deploy -c /stack/todo-mysql.yml todo_mysql
+```
+
+```yaml
+version: "3"
+
+services: 
+  master:
+    image: registry:5000/gngsn/tododb:latest
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role != manager]
+    environment:
+      MYSQL_ROOT_PASSWORD: gngsn
+      MYSQL_DATABASE: tododb
+      MYSQL_USER: gngsn
+      MYSQL_PASSWORD: gngsn
+      MYSQL_MASTER: "true"
+    networks:
+      - todoapp
+
+  slave:
+    image: registry:5000/gngsn/tododb:latest
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [node.role != manager]
+      depends_on:
+        - master
+      environment:
+        MYSQL_MASTER_HOST: gngsn
+        MYSQL_ROOT_PASSWORD: gngsn
+        MYSQL_DATABASE: tododb
+        MYSQL_USER: gngsn
+        MYSQL_PASSWORD: gngsn
+        MYSQL_REPL_USER: repl
+        MYSQL_REPL_PASSWORD: gngsn
+    networks:
+      - todoapp
+
+networks:
+  todoapp:
+    external: true
+```
+
+<table>
+<tr>
+<th>Error: <code>services.slave.deploy Additional property depends_on is not allowed</code></th>
+</tr>
+<tr><td>
+
+오타나 Indentation 잘못된 경우 발생하는 경우 ...
+
+`depends_on` 은 `slave.deploy.depends_on` 이 아니라 `slave.depends_on` 으로 설정
+
+동일하게, `depends_on` 은 `slave.deploy.environment` 이 아니라 `slave.environment` 으로 설정
+
+---
+
+<code>{{services.slave.deploy}} Additional property depends_on is not allowed</code>
+
+위와 같은 형식의 오류가 발생했다면, `{{ here }}` 에 위치한 property 에 오타나 포함 관계를 실수한 경우와 같이 오류가 있다는 의미
+
+</td></tr><tr><td>
+
+**TOBE:** 
+
+```yaml
+services:
+  ...
+  
+  slave:
+    image: registry:5000/gngsn/tododb:latest
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [node.role != manager]
+    depends_on:
+      - master
+    environment:
+      MYSQL_MASTER_HOST: gngsn
+      MYSQL_ROOT_PASSWORD: gngsn
+      MYSQL_DATABASE: tododb
+      MYSQL_USER: gngsn
+      MYSQL_PASSWORD: gngsn
+      MYSQL_REPL_USER: repl
+      MYSQL_REPL_PASSWORD: gngsn
+    networks:
+      - todoapp
+```
+
+</td></tr>
+</table>
+
+```Bash
+❯ docker container exec -it manager docker stack deploy -c /stack/todo-mysql.yml todo_mysql
+Creating service todo_mysql_slave
+Creating service todo_mysql_master
+```
+
+<br/>
+
+#### 스웜으로 배포하기
+
+todo-mysql.yml 에 정의된 서비스를 todo_mysql Stack으로 manager container에 배포
+
+스택을 사용해서 여러 서비스를 배포하면 서비스명 앞에 스택명이 붙어서 Master는 todo_mysql_master, Slave는 todo_mysql_slave라는 이름이 됨
+
+<br/>
+
+```Bash
+❯ docker container exec -it manager docker service ls
+ID             NAME                MODE         REPLICAS   IMAGE                               PORTS
+35e3w2ne1ogv   todo_mysql_master   replicated   0/1        registry:5000/gngsn/tododb:latest   
+8qwa2o4t2psd   todo_mysql_slave    replicated   0/2        registry:5000/gngsn/tododb:latest   
+```
+
+<br/><img src="./image/image03.png" width="60%" /><br/>
+
+<br/>
+
+### MySQL 컨테이너 확인 및 초기 데이터 투입
+
+초기 데이터를 넣기 전, 먼저 마스터 컨테이너가 Swarm 노드 중 어느 것에 배치됐는지 확 인해야 하는데,
+다음과 같이 `docker service ps` 명령을 사용
+
+```Bash
+❯ docker container exec -it manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running"
+ID                          NAME                  IMAGE                                                                 NODE      DESIRED STATE   CURRENT STATE           ERROR                                                                                                  PORTS
+v0oqftwuk2u2bufs5ljw78f8a   todo_mysql_master.1   registry:5000/gngsn/tododb:latest@sha256:0106779...26621d                       Running         Pending 4 minutes ago   "no suitable node (unsupported platform on 3 nodes; scheduling constraints not satisfied on 1 node)"
+```
+
+노드의 ID와 태스크의 ID만 알면 다음과 같이 docker container exec 명령을 중첩 실행해 원하는 컨테이너에 데이터 삽입 가능
+
+
+```Bash
+❯ docker container exec -it manager docker container exec -it v0oqftwuk2u2bufs5ljw78f8a bash
+```
 
 
 
