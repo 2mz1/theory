@@ -880,38 +880,92 @@ $ curl -s -XPUT -d '{
 
 ### API를 위한 Dockerfile
 
-WORKDIR: RUN이나 CMD 인스트럭션을 실행할 폴더 지정
+
+Image 빌드 후 registry container 에 등록 (push)
+
+`WORKDIR`: RUN이나 CMD 인스트럭션을 실행할 폴더 지정
 
 1. Build Dockerfile
 
-```Go
+```Bash
 ❯ docker image build -t gngsn/todoapi:latest .
+[+] Building 0.8s (9/9) FINISHED                                                                              docker:desktop-linux
+ => [internal] load .dockerignore                                                                                             0.0s
+ => => transferring context: 105B                                                                                             0.0s
+ ...
+ => => writing image sha256:8998887e2a97db3199fe20177c55e8f9015357a12873e4918263c63d02c7a614                                  0.0s
+ => => naming to docker.io/gngsn/todoapi:latest  
 ```
 
 2. Tag
 
-```Go
+```Bash
 ❯ docker image tag gngsn/todoapi:latest localhost:5000/gngsn/todoapi:latest
 ```
 
 3. Push
 
-```Go
-❯ docker image push localhost:5000/gngsn/todoapi:latest
+```Bash
+❯ docker image push localhost:5000/gngsn/todoapi:latest 
+The push refers to repository [localhost:5000/gngsn/todoapi]
+25e0859015af: Pushed 
+a547df8c58a5: Pushed 
+...
+latest: digest: sha256:61d9d16d547072ffbd319509d1a673ab70baf91e23b7e61a901d583e8133fcbe size: 2424
 ```
 
 <br/>
 
 ### Swarm에서 todoapi 서비스 실행하기
 
-stack 디렉터리에 위치한 todo-app.yml 파일에 api 서비스를 정의
+stack 디렉터리에 위치한 `todo-app.yml` 파일에 api 서비스를 정의
 
 레플리카 수는 2로 하고, 애플리케이션이 개발할 포트 및 MySQL 접속 정보를 환경 변수로 정의
 
+<br/>
+
+### 스웜에서 todoapi 서비스 실행하기
+
+```Bash
+❯ docker container exec -it manager vi /stack/todo-app.yml
+```
 
 _todo-app.yml_
 
 ```yaml
+version: "3"
+
+services:
+  api:
+    image: registry:5000/gngsn/todoapi:latest
+    deploy:
+      replicas: 2
+    environment:
+      TODO_BIND: ":8080"
+      TODO_MASTER_URL: "gngsn:gngsn@tcp(todo_mysql_master:3306)/tododb?parseTime=true"
+      TODO_SLAVE_URL: "gngsn:gngsn@tcp(todo_mysql_slave:3306)/tododb?parseTime=true"
+    networks:
+      - todoapp
+
+networks:
+  todoapp:
+    external: true
 ```
 
 
+```Bash
+❯ docker container exec -it manager docker stack deploy -c /stack/todo-app.yml todo_app
+Creating service todo_app_api
+
+❯ docker container exec -it manager docker service ls
+ID             NAME                MODE         REPLICAS   IMAGE                                      PORTS
+4cu8h87lohhe   todo_app_api        replicated   2/2        registry:5000/gngsn/todoapi:latest         
+k0yii1idlt71   todo_mysql_master   replicated   1/1        registry:5000/gngsn/tododb-master:latest   
+un1yx2mdtcq6   todo_mysql_slave    replicated   2/2        registry:5000/gngsn/tododb-slave:latest    
+```
+
+```Bash
+❯ docker container exec -it manager docker service logs -f todo_app_api
+todo_app_api.1.m89a58k4h93z@a75c6b534f97    | 2023/11/01 13:27:25 Listen HTTP Server
+todo_app_api.2.nt776bosf4ek@6c30c78dc985    | 2023/11/01 13:27:36 Listen HTTP Server
+```
