@@ -969,3 +969,340 @@ un1yx2mdtcq6   todo_mysql_slave    replicated   2/2        registry:5000/gngsn/t
 todo_app_api.1.m89a58k4h93z@a75c6b534f97    | 2023/11/01 13:27:25 Listen HTTP Server
 todo_app_api.2.nt776bosf4ek@6c30c78dc985    | 2023/11/01 13:27:36 Listen HTTP Server
 ```
+
+<br/>
+
+## 04. Nginx 구축
+
+```Bash
+.
+├── Dockerfile 
+└── etc
+   └── nginx    
+      ├── conf.d
+      ⎪   ├── log.conf    # 로그 출력 포맷을 정의하는 파일 (json 형식, 새로운 로그 포맷 정의만 함)
+      ⎪   ├── public.conf.tmpl    # 라우팅 HTTP 요청에 대한 라우팅 설정
+      ⎪   └── upstream.conf.tmpl    # 백엔드 서버 지정
+      └── nginx.conf.tmpl
+```
+
+<br/>
+
+### 04-01. nginx.conf 파일 구성
+
+- `nginx:1.13` 기반 이미지 사용
+
+_이미지 디렉터리 구조_
+
+```Bash
+(/etc/nginx) $ tree .
+├── conf.d 
+⎪   └── default.conf
+├── ...
+└── nginx.conf    
+```
+
+- Nginx 주 설정 파일: `/etc/nginx/nginx.conf`
+
+```Bash
+user  nginx;
+worker_processes 1;  # ①
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections 1024;  # ②
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout 65;  # ③
+
+    gzip on  # ④
+
+    include /etc/nginx/conf.d/*.conf;
+}
+```
+
+- ① Nginx에서 사용할 워커 프로세스 수 
+- ② 워커 프로세스가 만들 수 있는 최대 연결수 
+- ③ 클라이언트와의 접속 유지 시간(초)
+- ④ 응답 내용을 gzip 으로 압축할지 여부
+
+--- 
+
+- 성능과 관련된 값은 설정 파일에 고정값으로 설정하는 것보다는 환경변수로 설정하는 편이 튜닝 상 간편하기도 하고 이식성도 향상
+- 그러나 Nginx의 설정 파일 자체에는 환경변수를 참조하는 기능이 없기 때문에 환경변수를 설정 값으로 사용하려면 약간의 수고가 필요
+
+
+#### ✔️ entrykit temlpate 기능
+
+환경변수를적극활용하자
+도커 사용 시, 상황에 따라 동작을 변화시키는 부분은 모두 환경변수로 만들어 두고 여기에 기본 값을 정해 
+기본 동작을 설정하는 버릇을 들이는게 좋다. `entrykit` 처럼 이런 작업을 도와주는 도구도 충실히 갖춰져 있다.
+
+
+<br/>
+
+### 04-02. Nginx 컨테이너의 Dockerfile
+
+dockerfile 빌드 중 오류 발생 
+
+```Bash
+ => [ 7/11] RUN mv entrykit /usr/local/bin/                                                                                   0.3s
+ => ERROR [ 8/11] RUN entrykit --symlink                                                                                      0.3s
+------
+ > [ 8/11] RUN entrykit --symlink:
+0.270 runtime: failed to create new OS thread (have 2 already; errno=22)
+0.270 fatal error: newosproc
+```
+
+Apple M Series Chip 에서 발생하는 것으로 추정.
+
+entrykit 을 설치해서 사용하는 방식으로는 지원되지 않는 점이 있는 것으로 보아,
+entrykit 환경을 잘 지원하는 환경에서 명령어 설치를 위한 빌드 후, 
+원하는 환경에 복사해서 사용
+
+- **해결 방법 참고** 
+  - [multi-stage build] (https://docs.docker.com/build/building/multi-stage/#use-multi-stage-builds)
+  - [github issues](https://github.com/progrium/entrykit/issues/16#issuecomment-1231132628)
+
+<br/>
+
+```Docker
+# pulls entrykit from master and builds
+FROM golang:1.17.1
+
+RUN apt-get update && \
+    apt-get install unzip -y
+
+RUN wget https://github.com/progrium/entrykit/archive/refs/heads/master.zip \
+    && echo testing the dir \
+    && ls -a\
+    && unzip master.zip \
+    && rm master.zip \
+    && cd entrykit-master/ \
+    && make build \
+    && mv build/Linux/entrykit /bin/entrykit
+
+FROM nginx
+
+COPY --from=0 /bin/entrykit /bin/entrykit
+
+RUN chmod +x /bin/entrykit \
+    && entrykit --symlink
+
+RUN rm /etc/nginx/conf.d/*
+COPY etc/nginx/nginx.conf.tmpl /etc/nginx/
+COPY etc/nginx/conf.d/ /etc/nginx/conf.d/
+
+ENTRYPOINT [ \
+  "render", \
+      "/etc/nginx/nginx.conf", \
+      "--", \
+  "render", \
+      "/etc/nginx/conf.d/upstream.conf", \
+      "--", \
+  "render", \
+      "/etc/nginx/conf.d/public.conf", \
+      "--" \
+]
+
+CMD nginx -g "daemon off;"
+```
+
+이미지 빌드
+
+```Bash
+❯ docker image build -t gngsn/nginx:latest .
+[+] Building 39.0s (17/17) FINISHED                                                                           docker:desktop-linux
+ => [internal] load build definition from Dockerfile                                                                          0.0s
+ => => transferring dockerfile: 925B                                                                                          0.0s
+... 
+ => => writing image sha256:70d9ac160f7f63e28a4baf22ad5b31de822d30673017d1fd49cf4357691c7fc6                                  0.0s
+ => => naming to docker.io/gngsn/nginx:latest                                                                                 0.0s
+```
+
+registry 등록 
+
+```Bash
+❯ docker image tag gngsn/nginx:latest localhost:5000/gngsn/nginx:latest
+❯ docker image push localhost:5000/gngsn/nginx:latest
+The push refers to repository [localhost:5000/gngsn/nginx]
+...
+```
+
+<br/>
+
+### 04-02. Nginx 컨테이너의 Dockerfile
+
+
+_todo-app.yml_ 수정
+
+```yaml
+version: "3"
+
+services:
+  nginx:
+    image: registry:5000/gngsn/nginx:latest
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [node.role != manager]
+    depends_on:
+      - api
+    environment:
+      WORKER_PROCESSES: 2 
+      WORKER_CONNECTIONS: 1024
+      KEEPALIVE_TIMEOUT: 65
+      GZIP: "on"
+      BACKEND_HOST: todo_app_api:8080
+      BACKEND_MAX_FAILS: 3
+      BACKEND_FAIL_TIMEOUT: 10s
+      SERVER_PORT: 80
+      SERVER_NAME: todo_app_nginx
+      LOG_STDOUT: "true"
+    networks:
+      - todoapp
+
+  api:
+    image: registry:5000/gngsn/todoapi:latest
+    deploy:
+      replicas: 2
+    environment:
+      TODO_BIND: ":8080"
+      TODO_MASTER_URL: "gngsn:gngsn@tcp(todo_mysql_master:3306)/tododb?parseTime=true"
+      TODO_SLAVE_URL: "gngsn:gngsn@tcp(todo_mysql_slave:3306)/tododb?parseTime=true"
+    networks:
+      - todoapp
+
+networks:
+  todoapp:
+    external: true
+```
+
+- Nginx 도커이미지는 컨테이너를 실행할 때 entrykit에 주어진 환경변수 값으로 설정 파일을 만들게 했으므로 Nginx에서 백엔드로 요청을 전달하는 프록시 설정 또한 환경변수로 정의하면 된다.
+
+- todo_app의 스택을 위와 같이 수정 후 아래 명령어로 업데이트 
+
+```Bash
+❯ docker container exec -it manager docker stack deploy -c /stack/todo-app.yml todo_app
+Creating service todo_app_nginx
+Updating service todo_app_api (id: 4cu8h87lohhelpprpbrk0tz13)
+```
+
+- 서비스 확인 
+
+```Bash
+❯ docker container exec -it manager docker service ls
+ID             NAME                MODE         REPLICAS   IMAGE                                      PORTS
+4cu8h87lohhe   todo_app_api        replicated   2/2        registry:5000/gngsn/todoapi:latest         
+xoe1dr1yv82r   todo_app_nginx      replicated   2/2        registry:5000/gngsn/nginx:latest           
+k0yii1idlt71   todo_mysql_master   replicated   1/1        registry:5000/gngsn/tododb-master:latest   
+un1yx2mdtcq6   todo_mysql_slave    replicated   2/2        registry:5000/gngsn/tododb-slave:latest    
+```
+
+<br/>
+
+## 05. 웹 서비스 구축
+
+### TODO API 호출 및 페이지 HTML 렌더링
+
+```Bash
+❯ npm install
+❯ npm run build
+❯ npm run start
+```
+
+```Bash
+❯ docker image build -t gngsn/todoweb:latest .
+❯ docker image tag gngsn/todoweb:latest localhost:5000/gngsn/todoweb:latest 
+❯ docker image push localhost:5000/gngsn/todoweb:latest
+The push refers to repository [localhost:5000/gngsn/todoweb]
+...
+```
+
+<br/>
+
+### 05-01. 정적 파일을 다루는 방법
+
+- 웹 애플리케이션 앞단에 Nginx 배치
+- 배포한 Nginx 수정 필요
+- TODO 애플리케이션의 웹 부분은 Node.js를 사용해 생성한 동적 콘텐츠를 응답으로 제공
+- 이외에도 브라우저에서 웹페이지를 표시하는데 필요한 자바스크립트나 CSS 파일같은 정적 파일 (애셋) 을 제공하는 역할도 담당
+- 하지만, 웹 애플리케이션처럼 Nginx에서 리버스 프록시 구성을 취하는 경우, 정적 콘텐츠까지 Node.js 가 제공하면 비효율적
+- 정적 파일은 웹 애플리케이션을 거치지 않고 Nginx에서 바로 응답을 처리
+  - Nuxt.js에서는 `/_nuxt/` 경로 아래 애셋 파일 위치
+
+<br/>
+
+- `etc/nginx/conf.d/public.conf.tmpl`을 `etc/nginx/conf.d/nuxt.conf.tmpl`로 수정
+- `todonginx/Dockerfile` 을 수정해서 `Dockerfile-nuxt` 생성
+
+**재배포**
+
+```Bash
+❯ docker image build -f Dockerfile-nuxt -t gngsn/nginx-nuxt:latest .
+❯ docker image tag gngsn/nginx-nuxt:latest localhost:5000/gngsn/nginx-nuxt:latest
+❯ docker image push localhost:5000/gngsn/nginx-nuxt:latest
+The push refers to repository [localhost:5000/gngsn/nginx-nuxt]
+...
+```
+
+<br/>
+
+### 05-02. Nginx를 통한 접근 허용
+
+- todoapi와 마찬가지로 todoweb 역시 Nginx 를 통해 접근할 수 있음
+- stack 디렉터리에 다음과 같이 `todo-frontend.yml` 파일 생성
+- Nginx는 todoapi와 마찬가지로 `registry:5000/ch04/nginx-nuxt:latest` 이미지를 사용하지만, BACKEND_HOST등의 환경 변수 값을 수정해 동작을 달리함
+
+_`todo-frontend.yml` 파일 생성 후 아래 실행_
+
+```Bash
+❯ docker container exec -it manager vi /stack/todo-frontend.yml
+❯ docker container exec -it manager docker stack deploy -c /stack/todo-frontend.yml todo_frontend
+Creating service todo_frontend_web
+Creating service todo_frontend_nginx
+```
+
+
+<br/>
+
+### 05-03. 인그레스로 서비스 노출
+
+`todo-ingress.yml` 작성 후 배포
+
+```Bash
+❯ docker container exec -it manager vi /stack/todo-ingress.yml
+❯ docker container exec -it manager docker stack deploy -c /stack/todo-ingress.yml todo_ingress
+Creating service todo_frontend_haproxy
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
