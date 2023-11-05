@@ -58,3 +58,19 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+
+**/registry-data/**
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log
+
+# Nuxt build
+.nuxt
+
+# Nuxt generate
+dist
+
+build
