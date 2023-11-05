@@ -153,10 +153,11 @@ echo "server-id=$MYSQL_SERVER_ID" >> /etc/mysql/mysql.conf.d/mysqld.cnf
 <table>
 <tr>
 <th>STEP</th>
-<th>CODE</th>
 <th>DESC</th>
 </tr>
-<tr><th>① 환경 변수로 마스터와 슬레이브 지정</th><td>
+<tr><th>①</th><td>
+
+**✔️ 환경 변수로 마스터와 슬레이브 지정**
 
 ```Bash
 if [ ! -z "$MYSQL_MASTER" ]; then
@@ -167,13 +168,13 @@ fi
 echo "prepare as slave"
 ```
 
-</td><td>
-
 - `MYSQL_MASTER` 값에 따라 Master 혹은 Slave 동작 여부가 결정됨
 - `prepare.sh` 파일은 대부분 Slave 설정
 
 </td></tr>
-<tr><th>② Slave와 Master 간의 통신 확인</th><td>
+<tr><th>②</th><td>
+
+**✔️ Slave와 Master 간의 통신 확인**
 
 ```Bash
 if [ -z "$MYSQL_MASTER_HOST" ]; then
@@ -193,14 +194,14 @@ do
 done
 ```
 
-</td><td>
-
 - 슬레이브가 마스터에 MySQL 명령을 실행하려면 마스터의 호스트 명을 알아야 하기 때문에 `MYSQL_MASTER_HOST` 변수 전달
 - Slave에서 Master에 명령을 실행하려면 호스트명을 `-h` 옵션으로 주면 됨
 - 3초 마다 Master와 통신을 시도하면서 통신이 가능한지 확인
 
 </td></tr>
-<tr><th>③ Master에 Replica 사용자 및 권한 추가</th><td>
+<tr><th>③</th><td>
+
+**✔️ Master에 Replica 사용자 및 권한 추가**
 
 ```Bash
 IP=`hostname -i`
@@ -210,8 +211,6 @@ SOURCE_IP="$1.$2.%.%"
 mysql -h $MYSQL_MASTER_HOST -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE USER IF NOT EXISTS '$MYSQL_REPL_USER'@'$SOURCE_IP' IDENTIFIED BY '$MYSQL_REPL_PASSWORD';"
 mysql -h $MYSQL_MASTER_HOST -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT REPLICATION SLAVE ON *.* TO '$MYSQL_REPL_USER'@'$SOURCE_IP';"
 ```
-
-</td><td>
 
 - Replication을 사용하려면 마스터에 레플리카 사용자 및 사용자 권한을 추가해야 함
 
@@ -228,7 +227,9 @@ mysql> GRANT REPLICATION SLAVE ON *.* TO 'replication_user_name'@'slave_IP_addre
 - `MYSQL_MASTER_HOST`, `MYSQL_REPL_USER`, `MYSQL_REPL_PASSWORD` 값으로 사용자 등록 및 권한 설정
 
 </td></tr>
-<tr><th>④ Master binlog의 위치 설정</th><td>
+<tr><th>④</th><td>
+
+**✔️ Master binlog의 위치 설정**
 
 ```Bash
 MASTER_STATUS_FILE=/tmp/master-status
@@ -238,8 +239,6 @@ BINLOG_POSITION=`cat $MASTER_STATUS_FILE | grep Position | xargs | cut -d' ' -f2
 echo "BINLOG_FILE=$BINLOG_FILE"
 echo "BINLOG_POSITION=$BINLOG_POSITION"
 ```
-
-</td><td>
 
 - 애플리케이션 실행을 위해, Slave 가 Master의 host 및 binlog 파일명, binlog 위치를 알아야 함
 
@@ -251,7 +250,9 @@ mysql> show master status;
 </code>
 </pre>
 </td></tr>
-<tr><th>⑤ Replication 시작</th><td>
+<tr><th>⑤</th><td>
+
+**✔️ Replication 시작**
 
 ```Bash
 mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CHANGE MASTER TO MASTER_HOST='$MYSQL_MASTER_HOST', MASTER_USER='$MYSQL_REPL_USER', MASTER_PASSWORD='$MYSQL_REPL_PASSWORD', MASTER_LOG_FILE='$BINLOG_FILE', MASTER_LOG_POS=$BINLOG_POSITION;"
@@ -259,8 +260,6 @@ mysql -u root -p$MYSQL_ROOT_PASSWORD -e "START SLAVE;"
 
 echo "slave started"
 ```
-
-</td><td>
 
 이후 `CHANGE MASTER TO MASTER_HOST='master', MASTER_USER='repl', MASTER_PASSWORD='gngsn', MASTER_LOG_FILE='mysql-bin.000003', MASTER_LOG_POS=605;"`
 
@@ -273,20 +272,22 @@ echo "slave started"
 ### MySQL (mysql_master/mysql_slave) Dockerfile
 
 <table>
-<tr><th>STEP</th><th>CODE</th><th>DESC</th></tr>
-<tr><th>① 패키지 업데이트 및 `wget` 설치</th><td>
+<tr><th>STEP</th><th>DESC</th></tr>
+<tr><th>①</th><td>
+
+**✔️ 패키지 업데이트 및 `wget` 설치**
 
 ```Bash
 RUN apt-get update
 RUN apt-get install -y wget
 ```
 
-</td><td>
-
 - 패키지 목록을 업데이트하고 `docker image build` 명령에서 사용하는 `entrykit`을 받아오기 위해 `wget`을 설치
 
 </td></tr>
-<tr><th>② entrykit 설치</th><td>
+<tr><th>②</th><td>
+
+**✔️ entrykit 설치**
 
 ```Bash
 RUN wget https://github.com/progrium/entrykit/releases/download/v0.4.0/entrykit_0.4.0_linux_x86_64.tgz
@@ -296,13 +297,13 @@ RUN mv entrykit /usr/local/bin/
 RUN entrykit --symlink
 ```
 
-</td><td>
-
 - entrykit 설치: 컨테이너 실행 시 처리할 내용을 기술하기 위한 도구
 - **주 프로세스보다 먼저 실행할 명령이 있는 경우 유용**
 
 </td></tr>
-<tr><th>③ 스크립트 및 각종 설정 파일 복사</th><td>
+<tr><th>③</th><td>
+
+**✔️ 스크립트 및 각종 설정 파일 복사**
 
 ```Bash
 COPY add-server-id.sh /usr/local/bin/
@@ -313,12 +314,12 @@ COPY init-data.sh /usr/local/bin/
 COPY sql /sql
 ```
 
-</td><td>
-
 - MySQL 컨테이너를 구성하기 위한 파일과 스크립트를 `tododb`에서 컨테이너로 복사
 
 </td></tr>
-<tr><th>④ 스크립트, `mysqld` 실행</th><td>
+<tr><th>④</th><td>
+
+**✔️ 스크립트, `mysqld` 실행**
 
 ```Bash
 ENTRYPOINT [ \
@@ -328,8 +329,6 @@ ENTRYPOINT [ \
   "docker-entrypoint.sh" \
 ]
 ```
-
-</td><td>
 
 - 컨테이너에서 실행할 내용 기술
 - fyi. `docker-entrypoint.sh`는 `mysql:5.7` 에 포함된 파일
@@ -352,27 +351,23 @@ docker image build -t gngsn/tododb:latest .
 
 <table>
 <tr>
-<th>Error #1</th>
 <td>
 
+### ✔️ Error #1. `mysql:5.7: no match for platform`
+
 ```Bash
-❯ docker image build -t ch04/tododb:latest .
-[+] Building 3.5s (3/3) FINISHED                                                                                                                                                                                               docker:desktop-linux
- => [internal] load .dockerignore                                                                                                                                                                                                              0.0s
- => => transferring context: 2B                                                                                                                                                                                                                0.0s
- => [internal] load build definition from Dockerfile                                                                                                                                                                                           0.0s
- => => transferring dockerfile: 945B                                                                                                                                                                                                           0.0s
- => ERROR [internal] load metadata for docker.io/library/mysql:5.7                                                                                                                                                                             3.5s
-------
- > [internal] load metadata for docker.io/library/mysql:5.7:
-------
-Dockerfile:1
+❯ docker image build -t gngsn/tododb:latest .
+[+] Building 2.1s (6/6) FINISHED                                              docker:desktop-linux
+ => [internal] load build definition from Dockerfile
+...
 --------------------
-   1 | >>> FROM mysql:5.7
-   2 |     
-   3 |     RUN apt-get update
+  15 |     
+  16 | >>> FROM mysql:5.7
+  17 |     
+  18 |     COPY --from=0 /bin/entrykit /bin/entrykit
 --------------------
-ERROR: failed to solve: failed to parse stage name "arm64v8/mysql:oracle:5.7": invalid reference format
+ERROR: failed to solve: mysql:5.7: no match for platform in manifest sha256:880...3d: not found
+
 ```
 
 #### Solution #1
@@ -382,16 +377,17 @@ add `--platform linux/x86_64` flag
 </td>
 </tr>
 <tr>
-<th>Error #2</th>
 <td>
 
+### ✔️ Error #2. `apt-get: command not found`
+
 ```Bash
-❯ docker image build --platform linux/x86_64  -t ch04/tododb:latest .
+❯ docker image build --platform linux/x86_64 -t gngsn/tododb:latest .
 [+] Building 30.7s (6/18) 
 ...
  => => extracting sha256:b0e9b86ed64c8df8320596d475d3bbc4927e1e8bdc9ea97473c7e38024ae9c82                                                                                                                                                      0.0s
  => => extracting sha256:bfef93045c96cfc909e0b6b4d373e5cb88f5a1c92c22754bf1a353220e24f02c                                                                                                                                                      0.0s
- => [internal] load build context                                                                                                                                                                                                              0.0s
+ => [internal]  load build context                                                                                                                                                                                                              0.0s
  => => transferring context: 5.14kB                                                                                                                                                                                                            0.0s
  => ERROR [ 2/14] RUN apt-get update                                                                                                                                                                                                           0.4s
 ------
@@ -431,11 +427,11 @@ Docker image 변경
 
 `mysql:5.7` → `mysql:5.7-debian`
 
+</td></tr><tr><td>
 
-</td>
-</tr><tr>
-<th>Error #3</th>
-<td>
+### ✔️ Error #3. `failed to create new OS thread (have 2 already; errno=22)`
+
+dockerfile 빌드 중 오류 발생
 
 ```Bash
  > [ 8/14] RUN entrykit --symlink:
@@ -446,49 +442,61 @@ Docker image 변경
 0.130 runtime.throw(0x84a820, 0x9)
 ```
 
-#### Reason #3
+<br/>
+
+#### Reason
 
 Arm version의 컨테이너에서 발생하는 문제
 
-해결법 없음: https://github.com/docker/for-mac/issues/6083
+Apple M Series Chip 에서 발생하는 것으로 추정.
+
+entrykit 을 설치해서 사용하는 방식으로는 지원되지 않는 점이 있는 것으로 보아,
+entrykit 환경을 잘 지원하는 환경에서 명령어 설치를 위한 빌드 후,
+원하는 환경에 복사해서 사용
+
+- **해결 방법 참고**
+  - [multi-stage build] (https://docs.docker.com/build/building/multi-stage/#use-multi-stage-builds)
+  - [github issues](https://github.com/progrium/entrykit/issues/16#issuecomment-1231132628)
 
 <br/>
 
-#### Solution #3
+#### Solution
 
-Dockerfile 수정
+- Dockerfile 수정
 
-entrykit 사용하지 않고 ENTRYPOINT 로만 사용
+```Docker
+# pulls entrykit from master and builds
+FROM golang:1.17.1
 
-```Bash
-FROM --platform=linux/amd64 mysql:5.7-debian
+RUN apt-get update && \
+    apt-get install unzip -y
 
-RUN apt-get -y update
-RUN apt-get install -y wget
-
-COPY add-server-id.sh /usr/local/bin/
-COPY entrypoint.sh /usr/local/bin/
-COPY etc/mysql/mysql.conf.d/mysqld.cnf /etc/mysql/mysql.conf.d/
-COPY etc/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/
-COPY prepare.sh /docker-entrypoint-initdb.d
-COPY init-data.sh /usr/local/bin/
-COPY sql /sql
-
-ENTRYPOINT ./entrypoint.sh
-
-CMD ["mysqld"]
+RUN wget https://github.com/progrium/entrykit/archive/refs/heads/master.zip \
+    && echo testing the dir \
+    && ls -a\
+    && unzip master.zip \
+    && rm master.zip \
+    && cd entrykit-master/ \
+    && make build \
+    && mv build/Linux/entrykit /bin/entrykit
 ```
 
-</td>
-</tr>
-</table>
+위를 추가 후 아래와 같이 수정
+
+```Bash
+FROM mysql:5.7
+
+COPY --from=0 /bin/entrykit /bin/entrykit
+```
+
+</td></tr></table>
 
 <br/>
 
 **build 명령어 실행 :**
 
 ```Bash
-❯ docker image build --platform linux/amd64 --progress=plain --no-cache -t gngsn/tododb:latest . 
+❯ docker image build --platform linux/x86_64 -t gngsn/tododb:latest .
 ```
 
 - 레지스트리에 등록할 태그 명령어 실행
@@ -496,9 +504,6 @@ CMD ["mysqld"]
 ```Bash
 ❯ docker image tag gngsn/tododb:latest localhost:5000/gngsn/tododb:latest
 ```
-
-이전에 실행하던 `docker-compose.yml` 을 기반으로 `docker-compose up -d` 명령어 실행
-그럼 registry 서버가 올라가고, 해당 registry 서버에 tododb 등록
 
 
 ```Bash
@@ -665,7 +670,8 @@ mojbtc46odudt4ho74v7dtm8a   todo_mysql_master.1   registry:5000/gngsn/tododb-mas
 
 <table>
 <tr>
-<th>Master DB Data Init</th>
+<th rowspan="4">Master DB Data Init</th>
+</tr><tr>
 <td>
 
 ```Bash
@@ -679,7 +685,7 @@ Execute a command in a running container
 / # 
 ```
 
-</td><td>
+</td></tr><tr><td>
 
 ```Bash
 ❯ docker container exec -it manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running" --format "docker container exec -it {{.Node}} docker container exec -it {{.Name}}.{{.ID}} bash"
@@ -690,26 +696,11 @@ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_mast
 ❯ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_master.1.mojbtc46odudt4ho74v7dtm8a init-data.sh
 ```
 
-</td><td>
+</td></tr><tr><td>
 
 ```Bash
 ❯ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_master.1.mojbtc46odudt4ho74v7dtm8a mysql -u gngsn -pgngsn tododb
-mysql: [Warning] Using a password on the command line interface can be insecure.
-Reading table information for completion of table and column names
-You can turn off this feature to get a quicker startup with -A
-
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 10
-Server version: 8.0.33 MySQL Community Server - GPL
-
-Copyright (c) 2000, 2023, Oracle and/or its affiliates.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
+...
 mysql> SELECT * FROM todo LIMIT 1\G
 *************************** 1. row ***************************
      id: 1
@@ -722,12 +713,11 @@ updated: 2023-10-31 15:52:57
 ```
 
 </td></tr>
-</table>
 
-
-<table>
 <tr>
-<th>Slave DB Data Init</th>
+<th rowspan="4">Slave DB Data Init</th>
+</tr>
+<tr>
 <td>
 
 ```Bash
@@ -736,29 +726,17 @@ docker container exec -it 6c30c78dc985 docker container exec -it todo_mysql_slav
 docker container exec -it 3320c84927ee docker container exec -it todo_mysql_slave.2.t4ajy6v60fwo04s8pbcrmp5yc bash
 ```
 
+</td></tr><tr><td>
+
 ```Bash
 ❯ docker container exec -it 6c30c78dc985 docker container exec -it todo_mysql_slave.1.2mqwnco92qqwgm2b9x1iqzamk init-data.sh
 ```
 
-</td><td>
+</td></tr><tr><td>
 
 ```Bash
 ❯ docker container exec -it 6c30c78dc985 docker container exec -it todo_mysql_slave.1.2mqwnco92qqwgm2b9x1iqzamk mysql -u gngsn -pgngsn tododb
-mysql: [Warning] Using a password on the command line interface can be insecure.
-Reading table information for completion of table and column names
-You can turn off this feature to get a quicker startup with -A
-
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 10
-Server version: 8.0.33 MySQL Community Server - GPL
-
-Copyright (c) 2000, 2023, Oracle and/or its affiliates.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+...
 
 mysql> SELECT * FROM todo LIMIT 1\G
 *************************** 1. row ***************************
@@ -785,13 +763,13 @@ updated: 2023-10-31 16:03:23
 ```Bash
 (todoapi) $ tree -a -I '.git|.gitignore'
 .
-dockerignore -- 컨테이너에 넣지 않을 파일 및 디렉터리 정의 
-cmd
-    main.go -- 애플리케이션 시작
-db.go -- MySQL 접속
-Dockerfile -- 애플리케이션을 빌드하고 이미지를 생성하는 Dockerfile
-env.go -- main.go에서 사용하는 환경 변수 생성
-handler.go -- HTTP 요청을 받으면 비즈니스 로직을 수행하고 용답을 돌려줌
+├── dockerignore  # 컨테이너에 넣지 않을 파일 및 디렉터리 정의 
+├── cmd
+⎪  └── main.go    # 애플리케이션 시작
+├── db.go         # MySQL 접속
+├── Dockerfile    # 애플리케이션을 빌드하고 이미지를 생성하는 Dockerfile
+├── env.go        # main.go에서 사용하는 환경 변수 생성
+└── handler.go    # HTTP 요청을 받으면 비즈니스 로직을 수행하고 용답을 돌려줌
 ```
 
 `env.go`의 정의 환경변수를 살펴보면 아래와 같음

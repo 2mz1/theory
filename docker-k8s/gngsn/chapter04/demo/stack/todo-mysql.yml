@@ -2,7 +2,7 @@ version: "3"
 
 services:
   master:
-    image: registry:5000/gngsn/tododb-master:latest
+    image: registry:5000/gngsn/tododb:latest
     deploy:
       replicas: 1
       placement:
@@ -13,11 +13,13 @@ services:
       MYSQL_USER: gngsn
       MYSQL_PASSWORD: gngsn
       MYSQL_MASTER: "true"
+    command:
+      - bash
     networks:
       - todoapp
 
   slave:
-    image: registry:5000/gngsn/tododb-slave:latest
+    image: registry:5000/gngsn/tododb:latest
     deploy:
       replicas: 2
       placement:
@@ -38,3 +40,9 @@ services:
 networks:
   todoapp:
     external: true
+
+
+
+# docker container run -d --rm --name mysql -e "MYSQL_ROOT_PASSWORD=gngsn"-e "MYSQL_DATABASE=tododb" -e "MYSQL_USER=gngsn" -e "MYSQL_PASSWORD=gngsn" -e "MYSQL_MASTER=true"  mysql:5.7   \\\ --volumes-from mysql-data \\n
+#  docker container run -d --name tododb -e "MYSQL_ROOT_PASSWORD=gngsn"-e "MYSQL_DATABASE=tododb" -e "MYSQL_USER=gngsn" -e "MYSQL_PASSWORD=gngsn" -e "MYSQL_MASTER=true" localhost:5000/gngsn/tododb:latest
+#  docker container run -d -e MYSQL_ROOT_PASSWORD=gngsn -e MYSQL_DATABASE=tododb -e MYSQL_USER=gngsn -e MYSQL_PASSWORD=gngsn -e MYSQL_MASTER=true --name tododb localhost:5000/gngsn/tododb:latest
