@@ -524,7 +524,7 @@ Docker Tag Command : `docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]`
 ```bash
 ❯ docker image tag gngsn/echo:latest localhost:5000/gngsn/echo:latest
 ```
-
+rr
 `localhost:5000/gngsn/echo:latest`
 registry 컨테이너는 호스트에서 localhost:5000 와 같이 접근할 수 있으므로, 리포지토리 명 앞에 이 주소를 붙인 것.
 

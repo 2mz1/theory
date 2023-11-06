@@ -1,6 +1,6 @@
 version: "3"
 
-services:
+services: 
   master:
     image: registry:5000/gngsn/tododb-master:latest
     deploy:
@@ -13,8 +13,6 @@ services:
       MYSQL_USER: gngsn
       MYSQL_PASSWORD: gngsn
       MYSQL_MASTER: "true"
-    command:
-      - bash
     networks:
       - todoapp
 

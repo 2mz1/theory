@@ -56,7 +56,7 @@ Node.js를 사용하여, 브라우저에 나타낼 웹 페이지를 렌더링하
 
 Caching, Routing, Access Logging 등의 역할도 수행
 
-#### 배치 정략
+#### 배치 전략
 
 스웜 환경은 3장에서 만든 것 드대로 사용
 
@@ -81,6 +81,11 @@ k5qfdm4rxaiqpr4hddz8735h7
 <br/>
 
 ## 02. MySQL 서비스 구축
+
+
+```Bash
+❯ git clone https://github.com/gihyodocker/todoapi
+```
 
 ### MySQL 설정
 - `etc/mysql/mysql.conf.d/mysqld.conf`
@@ -246,7 +251,13 @@ echo "BINLOG_POSITION=$BINLOG_POSITION"
 
 <code>
 mysql> show master status;
-// TODO 실습 후 확인해서 기입하기
++---------------+----------+--------------+------------------+-------------------+
+| File          | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++---------------+----------+--------------+------------------+-------------------+
+| binlog.000002 |     2086 |              |                  |                   |
++---------------+----------+--------------+------------------+-------------------+
+1 row in set (0.00 sec)
+
 </code>
 </pre>
 </td></tr>
@@ -535,49 +546,6 @@ latest: digest: sha256:0106...621d size: 4493
 ❯ docker container exec -it manager docker stack deploy -c /stack/todo-mysql.yml todo_mysql
 ```
 
-```yaml
-version: "3"
-
-services: 
-  master:
-    image: registry:5000/gngsn/tododb:latest
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [node.role != manager]
-    environment:
-      MYSQL_ROOT_PASSWORD: gngsn
-      MYSQL_DATABASE: tododb
-      MYSQL_USER: gngsn
-      MYSQL_PASSWORD: gngsn
-      MYSQL_MASTER: "true"
-    networks:
-      - todoapp
-
-  slave:
-    image: registry:5000/gngsn/tododb:latest
-    deploy:
-      replicas: 2
-      placement:
-        constraints: [node.role != manager]
-      depends_on:
-        - master
-      environment:
-        MYSQL_MASTER_HOST: gngsn
-        MYSQL_ROOT_PASSWORD: gngsn
-        MYSQL_DATABASE: tododb
-        MYSQL_USER: gngsn
-        MYSQL_PASSWORD: gngsn
-        MYSQL_REPL_USER: repl
-        MYSQL_REPL_PASSWORD: gngsn
-    networks:
-      - todoapp
-
-networks:
-  todoapp:
-    external: true
-```
-
 <table>
 <tr>
 <th>Error: <code>services.slave.deploy Additional property depends_on is not allowed</code></th>
@@ -675,19 +643,6 @@ mojbtc46odudt4ho74v7dtm8a   todo_mysql_master.1   registry:5000/gngsn/tododb-mas
 <td>
 
 ```Bash
-❯ docker container exec -it manager docker container exec -it mojbtc46odudt4ho74v7dtm8a
-"docker container exec" requires at least 2 arguments.
-See 'docker container exec --help'.
-
-Usage:  docker container exec [OPTIONS] CONTAINER COMMAND [ARG...]
-
-Execute a command in a running container
-/ # 
-```
-
-</td></tr><tr><td>
-
-```Bash
 ❯ docker container exec -it manager docker service ps todo_mysql_master --no-trunc --filter "desired-state=running" --format "docker container exec -it {{.Node}} docker container exec -it {{.Name}}.{{.ID}} bash"
 docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_master.1.mojbtc46odudt4ho74v7dtm8a bash
 ```
@@ -701,15 +656,20 @@ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_mast
 ```Bash
 ❯ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_master.1.mojbtc46odudt4ho74v7dtm8a mysql -u gngsn -pgngsn tododb
 ...
-mysql> SELECT * FROM todo LIMIT 1\G
-*************************** 1. row ***************************
-     id: 1
-  title: MySQL Docker 이미지 생성
-content: MySQL Master, Slave를 환경 변수로 설정할 수 있는 MySQL 이미지 생성
- status: DONE
-created: 2023-10-31 15:52:57
-updated: 2023-10-31 15:52:57
-1 row in set (0.00 sec)
+mysql> SELECT * FROM todo;
++----+----------------------------------+----------------------------------------------------------------------------------------------------------+----------+---------------------+---------------------+
+| id | title                            | content                                                                                                  | status   | created             | updated             |
++----+----------------------------------+----------------------------------------------------------------------------------------------------------+----------+---------------------+---------------------+
+|  1 | MySQL Docker 이미지 생성         | MySQL Master, Slave를 환경 변수로 설정할 수 있는 MySQL 이미지 생성                                       | DONE     | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  2 | MySQL Stack 생성                 | MySQL Master, Slave를 환경 변수로 설정할 수 있는 MySQL 이미지 생성                                       | DONE     | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  3 | API 구현                         | Go 언어로 TODO 확인 및 업데이트 처리를 위한 API를 구현                                                   | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  4 | Nginx의 Docker 이미지 생성       | 백엔드에 HTTP 요청을 보내는 Nginx의 이미지를 생성                                                        | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  5 | API Stack 구축                   | Nginx와 API로 구성된 스택을 Swarm 클러스터에 구축                                                        | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  6 | Web 구현                         | Nuxt.js를 사용하여 API와 연동된 TODO의 상태를 표시하는 웹 애플리케이션을 구현                            | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  7 | Web Stack 구축                   | Nginx와 Web으로 구성된 스택을 Swarm 클러스터에 구축                                                      | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  8 | Ingress 구축                     | Swarm 클러스터에 외부에서 접근하기 위한 Ingress를 구축                                                   | TODO     | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
++----+----------------------------------+----------------------------------------------------------------------------------------------------------+----------+---------------------+---------------------+
+8 rows in set (0.00 sec)
 ```
 
 </td></tr>
@@ -738,15 +698,20 @@ docker container exec -it 3320c84927ee docker container exec -it todo_mysql_slav
 ❯ docker container exec -it 6c30c78dc985 docker container exec -it todo_mysql_slave.1.2mqwnco92qqwgm2b9x1iqzamk mysql -u gngsn -pgngsn tododb
 ...
 
-mysql> SELECT * FROM todo LIMIT 1\G
-*************************** 1. row ***************************
-     id: 1
-  title: MySQL Docker 이미지 생성
-content: MySQL Master, Slave를 환경 변수로 설정할 수 있는 MySQL 이미지 생성
- status: DONE
-created: 2023-10-31 16:03:23
-updated: 2023-10-31 16:03:23
-1 row in set (0.00 sec)
+mysql> SELECT * FROM todo;
++----+----------------------------------+----------------------------------------------------------------------------------------------------------+----------+---------------------+---------------------+
+| id | title                            | content                                                                                                  | status   | created             | updated             |
++----+----------------------------------+----------------------------------------------------------------------------------------------------------+----------+---------------------+---------------------+
+|  1 | MySQL Docker 이미지 생성         | MySQL Master, Slave를 환경 변수로 설정할 수 있는 MySQL 이미지 생성                                       | DONE     | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  2 | MySQL Stack 생성                 | MySQL Master, Slave를 환경 변수로 설정할 수 있는 MySQL 이미지 생성                                       | DONE     | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  3 | API 구현                         | Go 언어로 TODO 확인 및 업데이트 처리를 위한 API를 구현                                                   | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  4 | Nginx의 Docker 이미지 생성       | 백엔드에 HTTP 요청을 보내는 Nginx의 이미지를 생성                                                        | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  5 | API Stack 구축                   | Nginx와 API로 구성된 스택을 Swarm 클러스터에 구축                                                        | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  6 | Web 구현                         | Nuxt.js를 사용하여 API와 연동된 TODO의 상태를 표시하는 웹 애플리케이션을 구현                            | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  7 | Web Stack 구축                   | Nginx와 Web으로 구성된 스택을 Swarm 클러스터에 구축                                                      | PROGRESS | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
+|  8 | Ingress 구축                     | Swarm 클러스터에 외부에서 접근하기 위한 Ingress를 구축                                                   | TODO     | 2023-11-05 11:34:07 | 2023-11-05 11:34:07 |
++----+----------------------------------+----------------------------------------------------------------------------------------------------------+----------+---------------------+---------------------+
+8 rows in set (0.00 sec)
 ```
 
 </td></tr>
