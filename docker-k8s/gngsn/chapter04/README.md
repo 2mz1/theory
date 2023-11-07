@@ -62,14 +62,13 @@ Caching, Routing, Access Logging 등의 역할도 수행
 
 ```bash
 > docker container exec -it manager node ls
-
 ```
 
 <br/>
 
 ### 스택 구성
 
-<br/><img src="./image/image01.png" width="60%"/><br/>
+<br/><img src="./image/image02.png" width="60%"/><br/>
 
 overlay 네트워크 생성
 
@@ -84,7 +83,7 @@ k5qfdm4rxaiqpr4hddz8735h7
 
 
 ```Bash
-❯ git clone https://github.com/gihyodocker/todoapi
+❯ git clone https://github.com/gihyodocker/tododb
 ```
 
 ### MySQL 설정
@@ -383,7 +382,7 @@ ERROR: failed to solve: mysql:5.7: no match for platform in manifest sha256:880.
 
 #### Solution #1
 
-add `--platform linux/x86_64` flag
+add `--platform linux/arm64` flag
 
 </td>
 </tr>
@@ -476,8 +475,7 @@ entrykit 환경을 잘 지원하는 환경에서 명령어 설치를 위한 빌�
 - Dockerfile 수정
 
 ```Docker
-# pulls entrykit from master and builds
-FROM golang:1.17.1
+FROM golang:1.17.1 as build
 
 RUN apt-get update && \
     apt-get install unzip -y
@@ -495,9 +493,10 @@ RUN wget https://github.com/progrium/entrykit/archive/refs/heads/master.zip \
 위를 추가 후 아래와 같이 수정
 
 ```Bash
-FROM mysql:5.7
+FROM mysql:8.0.33
 
-COPY --from=0 /bin/entrykit /bin/entrykit
+COPY --from=build /bin/entrykit /bin/entrykit
+RUN chmod +x /bin/entrykit && entrykit --symlink
 ```
 
 </td></tr></table>
@@ -507,7 +506,7 @@ COPY --from=0 /bin/entrykit /bin/entrykit
 **build 명령어 실행 :**
 
 ```Bash
-❯ docker image build --platform linux/x86_64 -t gngsn/tododb:latest .
+❯ docker image build --platform linux/arm64 -t gngsn/tododb:latest .
 ```
 
 - 레지스트리에 등록할 태그 명령어 실행
@@ -650,6 +649,8 @@ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_mast
 ```Bash
 ❯ docker container exec -it d5d52eeba974 docker container exec -it todo_mysql_master.1.mojbtc46odudt4ho74v7dtm8a init-data.sh
 ```
+
+
 
 </td></tr><tr><td>
 
@@ -822,7 +823,6 @@ $ curl -s -XPUT -d '{
 <br/>
 
 ### API를 위한 Dockerfile
-
 
 Image 빌드 후 registry container 에 등록 (push)
 
@@ -1001,6 +1001,10 @@ http {
 
 ### 04-02. Nginx 컨테이너의 Dockerfile
 
+```Bash
+❯ git clone https://github.com/gihyodocker/todonginx
+```
+
 dockerfile 빌드 중 오류 발생 
 
 ```Bash
@@ -1160,6 +1164,10 @@ un1yx2mdtcq6   todo_mysql_slave    replicated   2/2        registry:5000/gngsn/t
 <br/>
 
 ## 05. 웹 서비스 구축
+
+```Bash
+git clone https://github.com/gihyodocker/todoweb
+```
 
 ### TODO API 호출 및 페이지 HTML 렌더링
 
