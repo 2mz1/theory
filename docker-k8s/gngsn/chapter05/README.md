@@ -19,7 +19,8 @@ Docker Compose, Swarm, Stack 을 이용한 애플리케이션의 기초를 익�
 
 ## 02. 로컬 PC에서 Kubernetes 실행
 
-_[Minikube](https://github.com/kubernetes/minikube): minikube implements a local Kubernetes cluster on macOS, Linux, and Windows._
+_[Minikube](https://github.com/kubernetes/minikube): minikube implements a local Kubernetes cluster on macOS, Linux, and
+Windows._
 
 <br/>
 
@@ -83,10 +84,7 @@ macOS에서 Homebrew 패키지 관리자를 사용하는 경우, Homebrew로 kub
 }
 ```
 
-
 <br/>
-
-#### kubectl 설치 - macOS
 
 <table><tr><td>
 <b>Minkube</b>
@@ -103,7 +101,61 @@ Minikube는 애드온(확장 기능)도 충실히 갖추고 있다. 예를 들�
 
 <br/>
 
-## 03. 쿠버네티스의 주요 개념 
+## 03. Kubernetes Components
+
+### Objects
+
+_Objects In Kubernetes_
+
+[🔗 official] (https://kubernetes.io/docs/concepts/overview/working-with-objects/#kubernetes-objects)
+
+<br/>
+
+#### Object spec and status
+
+Kubernetes Objects는 Kubernetes 시스템의 persistent 엔터티이다.
+Kubernetes는 당신의 cluster의 상태를 나타내기 위해 이러한 엔티티를 사용.
+
+- 어떤 컨테이너화된 애플리케이션이 실행되는지 혹은, 어떤 노드들인지
+- 이러한 애플리케이션들이 사용할 수 있는 리소스
+- 이러한 애플리케이션이 어떻게 행동하는지에 관련된 정책; 가령, restart 정책, upgrade, 그리고 fault-tolerance.
+
+Kubernetes object 는 "record of intent" 으로,
+한 번 object를 생성하면, Kubernetes 시스템은 해당 객체가 존재를 지속적으로 보장한다.
+object를 생성하는 것은 Kubernetes 시스템에 당신의 cluster가 어떤 워크로드처럼 동작할지 결정하는 것이다.
+(object를 생성함으로써, 당신은 Kubernetes 시스템에 당신이 원하는 cluster의 워크로드이 어떻게 보일지 효과적으로 말하는 것이다.)
+-> 이것이 바로 cluster의 목표 상태 (desired state)이다.
+
+Kubernetes object 와 동작하기 위해서는 - 그것들을 생성, 수정, 혹은 삭제하는 것에 상관없이 - Kubernetes API가 사용된다.
+가령, `kuberctl` 명령어를 사용하게 되면 CLI는 필요한 Kubernetes API 호출을 당신을 위해 만들 것이다.
+또한, Client Library 를 사용해서 당신의 프로그램에서 Kubernetes API를 바로 호출할 수도 있다.
+
+<br/>
+
+#### Object spec and status (Skip)
+
+<br/>
+
+#### Required fields
+[🔗 official] (https://kubernetes.io/docs/concepts/overview/working-with-objects/#required-fields)
+
+<br/>
+
+생성하려는 Kubernetes 개체의 매니페스트(YAML 또는 JSON 파일)에는 이래와 같은 필드 값을 설정 필요:
+
+- `apiVersion`: 해당 object를 생성하기 위해 사용하는 Kubernetes API 버전
+- `kind`: 생성하고자 하는 object의 종류 (kind)
+- `metadata`: object 를 구별할 용도의 `name`, `UID`(, 선택적으로 `namespace`) 등을 포함한 object 데이터
+- `spec` - object가 가질 상태 정의. 객체 spec의 정확한 형식은 모든 쿠버네티스 객체마다 다르며, 한 객체에 특정된 중첩된 필드를 포함. 쿠버네티스 API 참조를 통해 쿠버네티스를 사용하여 생성할 수 있는 모든 객체의 사양 형식을 찾을 수 있다.
+
+가령, Pod API의 spec 필드 문서를 참고해보면, 각 Pod의 경우, `.spec` 필드는 `Pod` 와 `Pod`가 가질 상태를 지정 (예: 해당 Pod 내의 각 컨테이너에 대한 컨테이너 이미지 이름).
+다른 예로, StatefulSet의 경우, `.spec` 필드는 `StatefulSet`와 원하는 상태를 지정.
+StatefulSet의 `.spec` 내에는 Pod 개체에 대한 템플릿이 있음. 해당 템플릿은 StatefulSet 컨트롤러가 StatefulSet 규격을 만족시키기 위해 만들 Pods를 설명함.
+다른 종류의 개체도 다른 `.status`를 가질 수 있으며, 또 API 참조 페이지는 해당 `.status` 필드의 구조와 각 다른 유형의 개체에 대한 내용을 자세히 설명함
+
+
+FYI. [Configuration Best Practices] (https://kubernetes.io/docs/concepts/configuration/overview/)
+
 
 | 리소스                      | 용도                                         |
 |--------------------------|--------------------------------------------|
@@ -128,21 +180,18 @@ Minikube는 애드온(확장 기능)도 충실히 갖추고 있다. 예를 들�
 | Cluster Role Binding     | 쿠버네티스 리소스 사용자와 클러스터 Role 을 연결 지음           |
 | Service Account          | 파드가 쿠버네티스 리소스를 조작할 때 사용하는 계정               |
 
-
 <br/>
 
-## 04. 쿠버네티스 클러스터와 노드
+### Node
 
-- Kubernetes Cluster: Kubernetes 의 여러 리소스를 관리하기 위한 집합체
-- Node: Kubernetes 리소스 중에서 가장 큰 개념
-  - 쿠버네티스 클러스터의 관리 대상으로 등록된 도커 (컨테이너의) 호스트
-  - 컨테이너가 배치되는 대상
-  - Kubernetes 는 노드의 리소스 사용 현황 및 배치 전략을 근거로 컨테이너를 적절히 배치
-  - 즉, 클러스터에 배치된 노드의 수, 노드의 사양 등에 따라 배치할 수 있는 컨테이너 수가 결정
-  - 클러스터의 처리 능력은 노드에 의해 결정
+: Kubernetes 리소스 중에서 가장 큰 개념
+
+- 쿠버네티스 클러스터의 관리 대상으로 등록된 도커 (컨테이너의) 호스트
+- 컨테이너가 배치되는 대상
+- Kubernetes 는 노드의 리소스 사용 현황 및 배치 전략을 근거로 컨테이너를 적절히 배치
+- 즉, 클러스터에 배치된 노드의 수, 노드의 사양 등에 따라 배치할 수 있는 컨테이너 수가 결정
+- 클러스터의 처리 능력은 노드에 의해 결정
 - Master Node: Kubernetes Cluster 전체를 관리하는 서버이며, 최소 하나 이상 필요
-
-<br/><img src="./image/image01.png" width="60%" /><br/>
 
 
 - ❯ `kubectl get nodes`
@@ -152,25 +201,113 @@ Minikube는 애드온(확장 기능)도 충실히 갖추고 있다. 예를 들�
 ❯ kubectl get nodes
 ```
 
+<br/>
+
 클라우드에서의 Kubernetes 라면, 아래에 해당
 
 - GCP → GCE Instance
 - AWS → EC2 Instance
 
-<br/>
+### Cluster
 
-- Master를 구성하는 컴포넌트 
+: Kubernetes 의 여러 리소스를 관리하기 위한 집합체
+
+쿠버네티스를 배포하면 클러스터를 얻음
+
+- **✔️ 쿠버네티스 클러스터**
+  - 컨테이너화된 애플리케이션을 실행하는 노드라고 하는 워커 머신의 집합
+  - 모든 클러스터는 최소 한 개의 워커 노드를 가짐
+
+- **✔️ 워커 노드**
+  - 애플리케이션의 구성요소인 파드를 호스트
+
+- **✔️ 컨트롤 플레인**
+  - 워커 노드와 클러스터 내 파드를 관리
+
+프로덕션 환경에서는 일반적으로 컨트롤 플레인이 여러 컴퓨터에 걸쳐 실행되고,
+클러스터는 일반적으로 여러 노드를 실행하므로 내결함성과 고가용성이 제공.
+
+<br/><img src="https://kubernetes.io/images/docs/components-of-kubernetes.svg" alt="components-of-kubernetes" width="60%" /><br/>
+
+
+- Control Plane (Master 구성) Component
 
 | Component               | Role                                                    |
 |-------------------------|---------------------------------------------------------|
-| kube-apiserver          | Kubernetes API를 노출하는 컴포넌트 kubectl로부터 리소스를 조작하라는 지시를 받음  |
+| kube-apiserver          | Kubernetes API를 노출하는 컴포넌트 kubectl 로부터 리소스를 조작하라는 지시를 받음 |
 | etcd                    | 고가용성을 갖춘 분산 key-value 스토어, 쿠버네티스 클러스터의 백킹 스토어로 사용됨      |
 | kube-scheduler          | 노드를 모니터링하고 컨테이너를 배치할 적절한 노드를 선택                         |
 | kube-controller-manager | 리소스를 제어하는 컨트롤러를 실행                                      |
 
 <br/>
 
-## 05. Namespace
+
+#### kube-apiserver
+
+: 쿠버네티스 주요 API 서버를 노출하는 쿠버네티스 컨트롤 플레인 컴포넌트
+
+- 쿠버네티스 컨트롤 플레인의 프론트 엔드
+- 수평으로 확장되도록 디자인 되어, 더 많은 인스턴스를 배포해서 확장할 수 있음
+
+<br/>
+
+#### etcd
+
+- 쿠버네티스 뒷단의 저장소: 모든 클러스터 데이터를 담는 일관성·고가용성 키-값 저장소
+- 쿠버네티스 클러스터에서 etcd를 뒷단의 저장소로 사용한다면, [데이터 백업 계획](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster) 필수 참조
+- [etcd 공식 문서](https://etcd.io/docs/)
+
+<br/>
+
+#### kube-scheduler
+
+: 노드가 배정되지 않은 새로 생성된 파드를 감지하고, 실행할 노드를 선택하는 컨트롤 플레인 컴포넌트.
+
+스케줄링 결정을 위해서 고려되는 아래 요소들을 포함
+
+- 리소스에 대한 개별 및 총체적 요구 사항
+- 하드웨어/소프트웨어/정책적 제약
+- 어피니티(affinity) 및 안티-어피니티(anti-affinity) 명세
+- 데이터 지역성
+- 워크로드-간 간섭
+- 데드라인
+
+<br/>
+
+#### kube-controller-manager
+
+- 컨트롤러 프로세스를 실행하는 컨트롤 플레인 컴포넌트.
+- 논리적으로, 각 컨트롤러는 분리된 프로세스이지만, 복잡성을 낮추기 위해 모두 단일 바이너리로 컴파일되고 단일 프로세스 내에서 실행 됨.
+
+이들 컨트롤러는 다음을 포함한다.
+
+- 노드 컨트롤러: 노드가 다운되었을 때 통지와 대응에 관한 책임을 가진다.
+- 잡 컨트롤러: 일회성 작업을 나타내는 잡 오브젝트를 감시한 다음, 해당 작업을 완료할 때까지 동작하는 파드를 생성한다.
+- 엔드포인트슬라이스 컨트롤러: (서비스와 파드 사이의 연결고리를 제공하기 위해) 엔드포인트슬라이스(EndpointSlice) 오브젝트를 채운다
+- 서비스어카운트 컨트롤러: 새로운 네임스페이스에 대한 기본 서비스어카운트(ServiceAccount)를 생성한다.
+
+<br/>
+
+#### cloud-controller-manager
+
+- 클라우드별 컨트롤 로직을 포함하는 쿠버네티스 컨트롤 플레인 컴포넌트.
+- 클라우드 컨트롤러 매니저를 통해 클러스터를 클라우드 공급자의 API에 연결하고, 해당 클라우드 플랫폼과 상호 작용하는 컴포넌트와 클러스터와만 상호 작용하는 컴포넌트를 구분할 수 있게 해 준다.
+- cloud-controller-manager는 클라우드 제공자 전용 컨트롤러만 실행한다. 자신의 사내 또는 PC 내부의 학습 환경에서 쿠버네티스를 실행 중인 경우 클러스터에는 클라우드 컨트롤러 매니저가 없다.
+
+<br/>
+
+kube-controller-manager와 마찬가지로 cloud-controller-manager는 논리적으로 독립적인 여러 컨트롤 루프를 단일 프로세스로 실행하는 단일 바이너리로 결합한다. 수평으로 확장(두 개 이상의 복제 실행)해서 성능을 향상시키거나 장애를 견딜 수 있다.
+
+다음 컨트롤러들은 클라우드 제공 사업자의 의존성을 가질 수 있다.
+
+노드 컨트롤러: 노드가 응답을 멈춘 후 클라우드 상에서 삭제되었는지 판별하기 위해 클라우드 제공 사업자에게 확인하는 것
+라우트 컨트롤러: 기본 클라우드 인프라에 경로를 구성하는 것
+서비스 컨트롤러: 클라우드 제공 사업자 로드밸런서를 생성, 업데이트 그리고 삭제하는 것
+
+
+<br/>
+
+### Namespace
 
 - Namespace: 클러스터 안의 가상 클러스터
   - Kubernetes Cluster 안에 가상 클러스터를 또 만들 수 있음
@@ -182,29 +319,10 @@ Minikube는 애드온(확장 기능)도 충실히 갖추고 있다. 예를 들�
 
 <br/>
 
-### 파드 생성 및 배포하기
+<br/>
 
-파드 생성은 kubectl 만 사용해도 가능, 하지만 버전 관리 관점에서도 yaml 파일로 정의하는 것이 좋음
 
-```yaml
-apiVersion: v1
-kind: Pod # 파일에서 정의하는 쿠버네티스 리소스의 유형을 지정하는 속성. kind 속성의 값에 따라 spec 아래의 스키마가 변화
-metadata: # 리소스에 부여되는 메타데이터
-  name: simple-echo
-spec: # 리소스를 정의하기 위한 속성, 파드의 경우 파드를 구성하는 컨테이너를 containers 아래에 정의
-  containers:
-    - name: nginx # 컨테이너 이름
-      image: gihyodocker/nginx:latest # 도커 허브에 저장된 이미지 태그 값 지정
-      env:
-        - name: BACKEND_HOST
-          value: localhost:8080
-      ports: # 컨테이너가 노출시킬(EXPOSE) 포트 지정
-        - containerPort: 80
-    - name: echo
-      image: gihyodocker/echo:latest
-      ports:
-        - containerPort: 8080
-```
+### Pod
 
 ```Bash
 ❯ kubectl apply -f simple-pod.yaml
@@ -213,35 +331,15 @@ pod/simple-echo created
 
 <br/>
 
-### 파드 다루기
-
 #### 파드 상태 목록 출력
 
 ```Bash
 ❯ kubectl get pod
 ```
 
-#### [Required fields] (https://kubernetes.io/docs/concepts/overview/working-with-objects/#required-fields)
-생성하려는 Kubernetes 개체의 매니페스트(YAML 또는 JSON 파일)에는 이래와 같은 필드 값을 설정 필요:
+### ReplicaSet
 
-- `apiVersion`: 해당 object를 생성하기 위해 사용하는 Kubernetes API 버전
-- `kind`: 생성하고자 하는 object의 종류 (kind)
-- `metadata`: object 를 구별할 용도의 `name`, `UID`(, 선택적으로 `namespace`) 등을 포함한 object 데이터 
-- `spec` - object가 가질 상태 정의. 객체 spec의 정확한 형식은 모든 쿠버네티스 객체마다 다르며, 한 객체에 특정된 중첩된 필드를 포함. 쿠버네티스 API 참조를 통해 쿠버네티스를 사용하여 생성할 수 있는 모든 객체의 사양 형식을 찾을 수 있다.
-
-가령, Pod API의 spec 필드 문서를 참고해보면, 각 Pod의 경우, `.spec` 필드는 `Pod` 와 `Pod`가 가질 상태를 지정 (예: 해당 Pod 내의 각 컨테이너에 대한 컨테이너 이미지 이름).
-다른 예로, StatefulSet의 경우, `.spec` 필드는 `StatefulSet`와 원하는 상태를 지정. 
-StatefulSet의 `.spec` 내에는 Pod 개체에 대한 템플릿이 있음. 해당 템플릿은 StatefulSet 컨트롤러가 StatefulSet 규격을 만족시키기 위해 만들 Pods를 설명함.
-다른 종류의 개체도 다른 `.status`를 가질 수 있으며, 또 API 참조 페이지는 해당 `.status` 필드의 구조와 각 다른 유형의 개체에 대한 내용을 자세히 설명함
-
-
-FYI. [Configuration Best Practices] (https://kubernetes.io/docs/concepts/configuration/overview/)
-
-
-## 07. ReplicaSet
-
-
-
+### Deployment
 
 
 
