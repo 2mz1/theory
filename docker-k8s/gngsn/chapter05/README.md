@@ -180,18 +180,65 @@ Minikube는 애드온(확장 기능)도 충실히 갖추고 있다. 예를 들�
 - 현재 클러스터 내에 존재하는 네임스페이스 목록 확인
   - 네임스페이스마다 권한을 설정할 수 있어 더욱 견고하고 세세하게 권한을 제어할 수 있음
 
+<br/>
+
+### 파드 생성 및 배포하기
+
+파드 생성은 kubectl 만 사용해도 가능, 하지만 버전 관리 관점에서도 yaml 파일로 정의하는 것이 좋음
+
+```yaml
+apiVersion: v1
+kind: Pod # 파일에서 정의하는 쿠버네티스 리소스의 유형을 지정하는 속성. kind 속성의 값에 따라 spec 아래의 스키마가 변화
+metadata: # 리소스에 부여되는 메타데이터
+  name: simple-echo
+spec: # 리소스를 정의하기 위한 속성, 파드의 경우 파드를 구성하는 컨테이너를 containers 아래에 정의
+  containers:
+    - name: nginx # 컨테이너 이름
+      image: gihyodocker/nginx:latest # 도커 허브에 저장된 이미지 태그 값 지정
+      env:
+        - name: BACKEND_HOST
+          value: localhost:8080
+      ports: # 컨테이너가 노출시킬(EXPOSE) 포트 지정
+        - containerPort: 80
+    - name: echo
+      image: gihyodocker/echo:latest
+      ports:
+        - containerPort: 8080
+```
+
+```Bash
+❯ kubectl apply -f simple-pod.yaml
+pod/simple-echo created
+```
+
+<br/>
+
+### 파드 다루기
+
+#### 파드 상태 목록 출력
+
+```Bash
+❯ kubectl get pod
+```
+
+#### [Required fields] (https://kubernetes.io/docs/concepts/overview/working-with-objects/#required-fields)
+생성하려는 Kubernetes 개체의 매니페스트(YAML 또는 JSON 파일)에는 이래와 같은 필드 값을 설정 필요:
+
+- `apiVersion`: 해당 object를 생성하기 위해 사용하는 Kubernetes API 버전
+- `kind`: 생성하고자 하는 object의 종류 (kind)
+- `metadata`: object 를 구별할 용도의 `name`, `UID`(, 선택적으로 `namespace`) 등을 포함한 object 데이터 
+- `spec` - object가 가질 상태 정의. 객체 spec의 정확한 형식은 모든 쿠버네티스 객체마다 다르며, 한 객체에 특정된 중첩된 필드를 포함. 쿠버네티스 API 참조를 통해 쿠버네티스를 사용하여 생성할 수 있는 모든 객체의 사양 형식을 찾을 수 있다.
+
+가령, Pod API의 spec 필드 문서를 참고해보면, 각 Pod의 경우, `.spec` 필드는 `Pod` 와 `Pod`가 가질 상태를 지정 (예: 해당 Pod 내의 각 컨테이너에 대한 컨테이너 이미지 이름).
+다른 예로, StatefulSet의 경우, `.spec` 필드는 `StatefulSet`와 원하는 상태를 지정. 
+StatefulSet의 `.spec` 내에는 Pod 개체에 대한 템플릿이 있음. 해당 템플릿은 StatefulSet 컨트롤러가 StatefulSet 규격을 만족시키기 위해 만들 Pods를 설명함.
+다른 종류의 개체도 다른 `.status`를 가질 수 있으며, 또 API 참조 페이지는 해당 `.status` 필드의 구조와 각 다른 유형의 개체에 대한 내용을 자세히 설명함
 
 
+FYI. [Configuration Best Practices] (https://kubernetes.io/docs/concepts/configuration/overview/)
 
 
-
-
-
-
-
-
-
-
+## 07. ReplicaSet
 
 
 
