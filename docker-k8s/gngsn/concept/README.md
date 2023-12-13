@@ -1,14 +1,3 @@
-## What is Kubernetes architecture?
-[🔗 Kubernetes Architecture and Components with Diagram](https://www.simform.com/blog/kubernetes-architecture/)
-[🔗 Kubernetes Architecture Explained](https://devopscube.com/kubernetes-architecture-explained/)
-
-
-Kubernetes 아키텍처는 컨테이너화된 워크로드에 안정적이고 적응 가능한 환경을 제공하기 위해,
-함께 동작하는 서로 다른 서버와 클러스터에 분산된 컴포넌트들의 집합입니다.
-각각의 Kubernetes 클러스터는 컨트롤 플레인 노드들 Control PLane Nodes 과 워커 노드들 Worker Nodes 로 구성됩니다.
-
-해당 글은 Kubernetes 아키텍처 다이어그램의 자세한 중요 요소들을 이해하도록 자세한 내용을 다룹니다.
-
 ## Kubernetes architecture components
 
 Kubernetes 아키텍처는 **master-worker 모델** 구조를 따르며, control plane에 해당하는 master는 워커 노드들을 관리합니다.
