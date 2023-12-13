@@ -6,7 +6,9 @@ Kubernetes 아키텍처는 **master-worker 모델** 구조를 따르며, control
 
 이 아키텍처의 중요한 구성 요소에 대해 알아보겠습니다:
 
-### Control Plane
+<br/>
+
+## Control Plane
 
 Control Plane *제어 평면*은 컨테이너 오케스트레이션을 담당하며 클러스터의 상태를 유지합니다.
 
@@ -19,7 +21,19 @@ Control Plane *제어 평면*은 컨테이너 오케스트레이션을 담당하
 
 각 구성 요소들은 함께 작동하여 **각 Kubernetes 클러스터의 상태가 미리 정의된 원하는 상태 _desired state_ 와 일치하는지 확인**
 
-#### ✔️ kube-apiserver
+<br/>
+
+## Worker Node
+
+| Component               | Role                                                                                                         |
+|-------------------------|--------------------------------------------------------------------------------------------------------------|
+| kubelet          | Kubelet은 클러스터의 모든 노드에서 실행되는 에이전트 컴포넌트                                                                        |
+| kube-proxy                    | Kube-proxy는 데몬셋으로 모든 노드에서 실행되는 데몬. Pod에 대한 Kubernetes Services 개념을 구현하는 프록시 구성 요소 (로드 밸런싱 되는 Pod 세트의 단일 DNS) |
+| Container runtime          | 모든 컨테이너 런타임은 CRI 인터페이스를 구현하고, gRPC CRI API(runtime 및 image service endpoint)를 노출                                                                              |
+
+<br/><br/>
+
+### ✔️ kube-apiserver
 
 kube-API 서버는 사용자들과 컴포넌트들이 클러스와 쉽게 통신할 수 있도록 함
 
@@ -38,7 +52,7 @@ API 서버는 etcd에서만 작동하며 built-in bastion API 서버 프록시�
 
 <br/>
 
-#### ✔️ etcd
+### ✔️ etcd
 
 key-value 데이터 저장소.
 
@@ -70,7 +84,7 @@ Kubernetes의 api-server는 `etcd`의 watch 기능을 사용하여 객체의 상
 
 <br/>
 
-#### ✔️ kube-scheduler
+### ✔️ kube-scheduler
 
 kube-scheduler는 **워커 노드에서 Kubernetes pod의 스케줄링을 담당**
 
@@ -93,7 +107,7 @@ kube-scheduler는 **워커 노드에서 Kubernetes pod의 스케줄링을 담당
 
 <br/>
 
-#### ✔️ Kube Controller Manager
+### ✔️ Kube Controller Manager
 
 controller의 동작을 실행시키는 컨트롤 플레인 구성 요소.
 
@@ -135,7 +149,7 @@ Kubernetes resources/objects (pod, namespace, job, replicaset 등)은 각각의 
 
 <br/>
 
-#### ✔️ Cloud Controller Manager
+### ✔️ Cloud Controller Manager
 
 _cloud-controller-manager, CCM_
 
