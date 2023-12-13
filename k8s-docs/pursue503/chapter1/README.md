@@ -1,9 +1,6 @@
 # Chapter1 OverView(Object)
 
-생성일: 2023년 11월 22일 오후 3:14
-태그: Chapter1
 
----
 
 # 쿠버네티스 오브젝트란?
 
